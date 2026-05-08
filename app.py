@@ -14,6 +14,11 @@ st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
 
+* {
+    font-family: "Zalando Sans Expanded Extra Bold", "Zalando Sans Expanded", Arial, sans-serif !important;
+    font-weight: 800 !important;
+}
+
 .stApp {
     background: #3bc6e4;
 }
@@ -49,7 +54,6 @@ st.markdown("""
 
 h1, h2, h3, p, label, span {
     color: white !important;
-    font-family: Arial, sans-serif;
 }
 
 [data-testid="stTextInput"],
@@ -87,6 +91,27 @@ input::placeholder {
     background: #00486e !important;
     color: white !important;
     border: 1px solid white !important;
+}
+
+[data-testid="stFileUploaderFile"] {
+    background: #00486e !important;
+    border: 1px solid white !important;
+    border-radius: 12px !important;
+}
+
+[data-testid="stFileUploaderFile"] * {
+    color: white !important;
+    fill: white !important;
+}
+
+[data-testid="stFileUploaderDeleteBtn"] {
+    background: #00486e !important;
+    color: white !important;
+}
+
+[data-testid="stFileUploaderDeleteBtn"] * {
+    color: white !important;
+    fill: white !important;
 }
 
 .stButton > button {
@@ -127,19 +152,41 @@ input::placeholder {
     color: white !important;
 }
 
+/* Dataframe/table */
 [data-testid="stDataFrame"] {
-    background: white;
+    background: #00486e !important;
     border-radius: 12px;
+    border: 1px solid white;
+    overflow: hidden;
 }
 
+[data-testid="stDataFrame"] * {
+    color: white !important;
+}
+
+/* Dataframe hover toolbar */
 [data-testid="stElementToolbar"] {
-    background: white !important;
-    border-radius: 8px;
+    background: #00486e !important;
+    border: 1px solid white !important;
+    border-radius: 10px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
 }
 
-[data-testid="stElementToolbar"] * {
-    color: #00486e !important;
-    fill: #00486e !important;
+[data-testid="stElementToolbar"] button {
+    background: #00486e !important;
+    border: 1px solid white !important;
+    border-radius: 6px !important;
+}
+
+[data-testid="stElementToolbar"] svg,
+[data-testid="stElementToolbar"] path {
+    color: white !important;
+    fill: white !important;
+    stroke: white !important;
+}
+
+[data-testid="stElementToolbar"] button:hover {
+    background: #003554 !important;
 }
 
 .small-note {
@@ -153,10 +200,9 @@ st.markdown("""
 <div class="hero">
     <h1>Upload Election Results & Generate Live Projections</h1>
     <p>
-        This tool is for Community Independent Candidates running in state and federal campaigns in Australia. Upload a baseline election results file, paste a live booth-level results link,
+        Upload a baseline election results file, paste a live booth-level results link,
         enter the candidate names, and click <b>Run projection</b> to estimate the live result
         using booth-by-booth swing modelling.
-        For any and all enquiries please email: henryymooree@gmail.com
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -316,12 +362,6 @@ def project_result(live, baseline):
     }, merged
 
 
-DEFAULT_NEPEAN_URL = (
-    "https://www.vec.vic.gov.au/voting/current-elections/nepean-by-election/"
-    "nepean-by-election-results/results-by-district/nepean-district-results/"
-    "Nepean-2CP-results-by-voting-centre"
-)
-
 left, right = st.columns([1, 2.2], gap="large")
 
 with left:
@@ -337,7 +377,7 @@ with left:
 
     live_url = st.text_input(
         "Paste current booth-level results page link",
-        value=DEFAULT_NEPEAN_URL
+        placeholder="Paste booth-level results link here"
     )
 
     candidate_a_name = st.text_input("Candidate A name", "Independent")
@@ -445,7 +485,37 @@ with right:
         "Live votes"
     ]
 
-    st.dataframe(
-        merged_display.sort_values("Live votes", ascending=False),
-        use_container_width=True
+    styled_table = (
+        merged_display
+        .sort_values("Live votes", ascending=False)
+        .style
+        .set_properties(**{
+            "background-color": "#00486e",
+            "color": "white",
+            "border-color": "white",
+            "font-family": "Zalando Sans Expanded Extra Bold, Zalando Sans Expanded, Arial, sans-serif",
+            "font-weight": "800",
+        })
+        .set_table_styles([
+            {
+                "selector": "th",
+                "props": [
+                    ("background-color", "#00486e"),
+                    ("color", "white"),
+                    ("border-color", "white"),
+                    ("font-family", "Zalando Sans Expanded Extra Bold, Zalando Sans Expanded, Arial, sans-serif"),
+                    ("font-weight", "800"),
+                ],
+            },
+            {
+                "selector": "td",
+                "props": [
+                    ("background-color", "#00486e"),
+                    ("color", "white"),
+                    ("border-color", "white"),
+                ],
+            },
+        ])
     )
+
+    st.dataframe(styled_table, use_container_width=True)
