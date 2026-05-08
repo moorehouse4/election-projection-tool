@@ -24,12 +24,16 @@ st.markdown("""
     padding-bottom: 3rem;
 }
 
-.hero {
+.hero, .panel {
     background: #00486e;
+    padding: 1.5rem;
+    border-radius: 22px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    margin-bottom: 1.2rem;
+}
+
+.hero {
     padding: 2.5rem;
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
-    margin-bottom: 2rem;
 }
 
 .hero h1 {
@@ -39,27 +43,13 @@ st.markdown("""
     margin-bottom: 0.8rem;
 }
 
-.hero p {
+.hero p, .panel p, .panel h2, .panel h3 {
     color: white !important;
-    font-size: 1.15rem;
-    max-width: 850px;
 }
 
 h1, h2, h3, p, label, span {
     color: white !important;
     font-family: Arial, sans-serif;
-}
-
-.panel {
-    background: #00486e;
-    padding: 1.5rem;
-    border-radius: 22px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-    margin-bottom: 1.2rem;
-}
-
-.panel h2, .panel h3, .panel p {
-    color: white !important;
 }
 
 [data-testid="stTextInput"],
@@ -93,6 +83,12 @@ input::placeholder {
     color: white !important;
 }
 
+[data-testid="stFileUploaderDropzone"] button {
+    background: #00486e !important;
+    color: white !important;
+    border: 1px solid white !important;
+}
+
 .stButton > button {
     background: #00486e !important;
     color: white !important;
@@ -103,7 +99,8 @@ input::placeholder {
     width: 100%;
 }
 
-.stButton > button:hover {
+.stButton > button:hover,
+[data-testid="stFileUploaderDropzone"] button:hover {
     background: white !important;
     color: #00486e !important;
     border: 1px solid #00486e !important;
@@ -133,6 +130,16 @@ input::placeholder {
 [data-testid="stDataFrame"] {
     background: white;
     border-radius: 12px;
+}
+
+[data-testid="stElementToolbar"] {
+    background: white !important;
+    border-radius: 8px;
+}
+
+[data-testid="stElementToolbar"] * {
+    color: #00486e !important;
+    fill: #00486e !important;
 }
 
 .small-note {
@@ -281,6 +288,7 @@ def project_result(live, baseline):
         return None, merged
 
     merged["swing_to_a"] = merged["a_pct_live"] - merged["a_pct_base"]
+    merged["swing_to_b"] = -merged["swing_to_a"]
 
     weighted_swing = (
         merged["swing_to_a"] * merged["votes_live"]
@@ -306,10 +314,19 @@ def project_result(live, baseline):
     }, merged
 
 
+DEFAULT_NEPEAN_URL = (
+    "https://www.vec.vic.gov.au/voting/current-elections/nepean-by-election/"
+    "nepean-by-election-results/results-by-district/nepean-district-results/"
+    "Nepean-2CP-results-by-voting-centre"
+)
+
 left, right = st.columns([1, 2.2], gap="large")
 
 with left:
-    st.markdown('<div class="panel"><h2>Inputs</h2><p class="small-note">Upload the baseline file and paste the live booth-level results link.</p></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="panel"><h2>Inputs</h2><p class="small-note">Upload the baseline file and paste the live booth-level results link.</p></div>',
+        unsafe_allow_html=True
+    )
 
     uploaded_file = st.file_uploader(
         "Upload baseline results file",
@@ -318,7 +335,7 @@ with left:
 
     live_url = st.text_input(
         "Paste current booth-level results page link",
-        placeholder="https://www.vec.vic.gov.au/..."
+        value=DEFAULT_NEPEAN_URL
     )
 
     candidate_a_name = st.text_input("Candidate A name", "Independent")
@@ -378,7 +395,24 @@ with right:
     c3, c4, c5 = st.columns(3)
     c3.metric("Matched booths", len(merged))
     c4.metric("Counted vs baseline", f"{result['counted'] * 100:.1f}%")
-    c5.metric(f"Swing to {candidate_a_name}", f"{result['weighted_swing']:.2f}%")
+
+    swing_colour = "#ff4b4b" if result["weighted_swing"] < 0 else "white"
+    c5.markdown(
+        f"""
+        <div style="
+            background:#00486e;
+            border:1px solid white;
+            border-radius:18px;
+            padding:1.2rem;
+        ">
+            <div style="color:white;font-size:0.9rem;">Swing to {candidate_a_name}</div>
+            <div style="color:{swing_colour};font-size:2rem;font-weight:800;">
+                {result['weighted_swing']:.2f}%
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if result["projected_a"] > result["projected_b"]:
         st.success(f"Current projection: {candidate_a_name} ahead")
@@ -392,6 +426,9 @@ with right:
         "a_pct_base",
         "a_pct_live",
         "swing_to_a",
+        "b_pct_base",
+        "b_pct_live",
+        "swing_to_b",
         "votes_live"
     ]].copy()
 
@@ -400,6 +437,9 @@ with right:
         f"{candidate_a_name} baseline %",
         f"{candidate_a_name} live %",
         f"Swing to {candidate_a_name}",
+        f"{candidate_b_name} baseline %",
+        f"{candidate_b_name} live %",
+        f"Swing to {candidate_b_name}",
         "Live votes"
     ]
 
