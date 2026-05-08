@@ -73,42 +73,38 @@ def parse_live_results(html, booth_names):
     soup = BeautifulSoup(html, "lxml")
     text = soup.get_text("\n")
 
-    lines = [line.strip() for line in text.split("\n") if line.strip()]
-    booth_names = sorted([clean_booth(b) for b in booth_names], key=len, reverse=True)
-
     rows = []
 
-    for line in lines:
-        lower = clean_booth(line)
+    pattern = re.compile(
+        r"([A-Za-z][A-Za-z\s]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)"
+    )
 
-        matched_booth = None
-        for booth in booth_names:
-            if lower.startswith(booth + " "):
-                matched_booth = booth
-                break
+    for match in pattern.finditer(text):
+        booth = clean_booth(match.group(1))
 
-        if not matched_booth:
+        skip = [
+            "ordinary votes total",
+            "absent votes",
+            "early votes",
+            "postal votes",
+            "provisional votes",
+            "marked as voted votes",
+            "total votes",
+            "percentage of formal vote polled by candidate",
+        ]
+
+        if booth in skip:
             continue
 
-        remainder = lower.replace(matched_booth, "", 1).strip()
+        lib_votes = int(match.group(2))
+        ind_votes = int(match.group(3))
+        total_votes = int(match.group(6))
 
-        nums = re.findall(r"\d+", remainder)
-        nums = [int(n) for n in nums]
-
-        if len(nums) < 4:
-            continue
-
-        # VEC order:
-        # Liberal votes, Independent votes, miss-sorts, informal, total votes
-        lib_votes = nums[0]
-        ind_votes = nums[1]
-        total_votes = nums[-1]
-
-        if total_votes <= 0 or (ind_votes + lib_votes) <= 0:
+        if total_votes <= 0 or (lib_votes + ind_votes) <= 0:
             continue
 
         rows.append({
-            "booth": matched_booth,
+            "booth": booth,
             "a_pct": ind_votes / (ind_votes + lib_votes) * 100,
             "b_pct": lib_votes / (ind_votes + lib_votes) * 100,
             "votes": total_votes
