@@ -48,7 +48,7 @@ header {visibility: hidden;}
 }
 
 .card {
-    background: rgba(255,255,255,0.96);
+    background: #3bc6e4;
     padding: 1.5rem;
     border-radius: 18px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.12);
@@ -65,8 +65,8 @@ p, label, div {
 }
 
 .stButton > button {
-    background: #05ABC3;
-    color: white;
+    background: #3bc6e4;
+    color: #3bc6e4;
     border: none;
     border-radius: 999px;
     padding: 0.75rem 1.5rem;
