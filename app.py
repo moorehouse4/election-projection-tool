@@ -95,34 +95,28 @@ input::placeholder {
     color: white !important;
 }
 
-/* Main upload button */
+/* Upload button - no fake duplicate text */
 [data-testid="stFileUploaderDropzone"] button {
     background: white !important;
     color: #00486e !important;
     border: none !important;
     border-radius: 8px !important;
     padding: 0.45rem 1rem !important;
-    font-size: 0 !important;
-    position: relative;
+    width: auto !important;
+    min-width: auto !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button div,
-[data-testid="stFileUploaderDropzone"] button span {
-    display: none !important;
+[data-testid="stFileUploaderDropzone"] button * {
+    color: #00486e !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button::after {
-    content: "Upload";
-    font-size: 16px;
-    color: #00486e;
-    font-weight: 800;
-}
-
+/* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
     background: #003554 !important;
+    color: white !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button:hover::after {
+[data-testid="stFileUploaderDropzone"] button:hover * {
     color: white !important;
 }
 
@@ -136,21 +130,6 @@ input::placeholder {
 [data-testid="stFileUploaderFile"] * {
     color: white !important;
     fill: white !important;
-}
-
-/* Hide the second Upload button after file is uploaded */
-[data-testid="stFileUploaderFile"] + button {
-    display: none !important;
-}
-
-/* Hide extra upload button once a file is uploaded */
-[data-testid="stFileUploaderDropzone"]:has([data-testid="stFileUploaderFile"]) > button {
-    display: none !important;
-}
-
-/* Fallback: hide any button after uploaded file row */
-[data-testid="stFileUploaderFile"] ~ button {
-    display: none !important;
 }
 
 /* Run button */
