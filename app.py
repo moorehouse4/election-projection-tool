@@ -62,7 +62,7 @@ input,
 textarea,
 [data-baseweb="input"] input {
     background: #00486e !important;
-    color: #00486e  !important;
+    color: white  !important;
     border: 1px solid white !important;
     border-radius: 10px !important;
 }
@@ -119,7 +119,7 @@ input::placeholder {
 }
 
 [data-testid="stDataFrame"] {
-    background: white;
+    background: #00486e;
     border-radius: 12px;
 }
 </style>
