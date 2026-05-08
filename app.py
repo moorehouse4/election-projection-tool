@@ -113,38 +113,21 @@ input::placeholder {
     font-size: 0.85rem !important;
 }
 
-/* Upload/Add button */
+/* Upload/Add button - simple readable default */
 [data-testid="stFileUploaderDropzone"] button {
+    all: unset !important;
     background: white !important;
     color: #00486e !important;
-    border: 1px solid white !important;
     border-radius: 8px !important;
-    padding: 0.35rem 0.8rem !important;
-    width: auto !important;
-    min-width: auto !important;
-    font-size: 0.85rem !important;
+    padding: 0.45rem 0.9rem !important;
+    cursor: pointer !important;
 }
 
-/* Text inside Upload/Add button */
 [data-testid="stFileUploaderDropzone"] button * {
     color: #00486e !important;
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
 }
 
-/* Hover */
-[data-testid="stFileUploaderDropzone"] button:hover {
-    background: #003554 !important;
-    color: white !important;
-}
-
-[data-testid="stFileUploaderDropzone"] button:hover * {
-    color: white !important;
-}
-/* Run button */
-.stButton > button {
-    background: #00486e !important;
-    color: white !important;
-    
 /* Run button */
 .stButton > button {
     background: #00486e !important;
@@ -161,6 +144,7 @@ input::placeholder {
     border: 1px solid white !important;
 }
 
+/* Alerts */
 [data-testid="stAlert"] {
     background: #00486e !important;
     border-radius: 16px;
@@ -171,6 +155,7 @@ input::placeholder {
     color: white !important;
 }
 
+/* Metrics */
 [data-testid="stMetric"] {
     background: #00486e;
     border-radius: 18px;
