@@ -237,6 +237,27 @@ def clean_booth(x):
     return str(x).lower().strip()
 
 
+def classify_vote_type(name):
+    name = clean_booth(name)
+
+    if "early" in name or "pre-poll" in name or "pre poll" in name:
+        return "early"
+    if "postal" in name:
+        return "postal"
+    if "absent" in name:
+        return "absent"
+    if "provisional" in name:
+        return "provisional"
+    if "marked as voted" in name:
+        return "marked_as_voted"
+
+    return "ordinary"
+
+
+def clamp(value, low=0, high=100):
+    return max(low, min(high, value))
+
+
 def load_uploaded_file(file):
     file.seek(0)
 
@@ -288,12 +309,13 @@ def auto_detect_baseline(df):
 
     base["a_pct"] = base["a_votes"] / (base["a_votes"] + base["b_votes"]) * 100
     base["b_pct"] = 100 - base["a_pct"]
+    base["vote_type"] = base["booth"].apply(classify_vote_type)
 
     if base.empty:
         st.error("Could not build baseline from the uploaded file.")
         st.stop()
 
-    return base[["booth", "a_pct", "b_pct", "votes"]]
+    return base[["booth", "vote_type", "a_pct", "b_pct", "votes"]]
 
 
 def fetch_live_page(url):
@@ -309,19 +331,16 @@ def parse_live_results(html):
     rows = []
 
     pattern = re.compile(
-        r"([A-Za-z][A-Za-z\s]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)"
+        r"([A-Za-z][A-Za-z\s\-]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)"
     )
 
     for match in pattern.finditer(text):
         booth = clean_booth(match.group(1))
 
         skip = [
-            "ordinary votes total",
-            "absent votes",
-            "early votes",
-            "postal votes",
-            "provisional votes",
-            "marked as voted votes",
+            "two candidate preferred votes",
+            "candidate",
+            "party",
             "total votes",
             "percentage of formal vote polled by candidate",
         ]
@@ -338,18 +357,29 @@ def parse_live_results(html):
 
         rows.append({
             "booth": booth,
+            "vote_type": classify_vote_type(booth),
+            "a_votes": a_votes,
+            "b_votes": b_votes,
             "a_pct": a_votes / (a_votes + b_votes) * 100,
             "b_pct": b_votes / (a_votes + b_votes) * 100,
             "votes": total_votes
         })
 
     if not rows:
-        return pd.DataFrame(columns=["booth", "a_pct", "b_pct", "votes"])
+        return pd.DataFrame(columns=[
+            "booth", "vote_type", "a_votes", "b_votes", "a_pct", "b_pct", "votes"
+        ])
 
     return pd.DataFrame(rows).drop_duplicates(subset=["booth"], keep="first")
 
 
 def project_result(live, baseline):
+    baseline = baseline.copy()
+    live = live.copy()
+
+    live["a_votes"] = live["a_pct"] / 100 * live["votes"]
+    live["b_votes"] = live["b_pct"] / 100 * live["votes"]
+
     merged = pd.merge(
         live,
         baseline,
@@ -362,25 +392,85 @@ def project_result(live, baseline):
 
     merged["swing_to_a"] = merged["a_pct_live"] - merged["a_pct_base"]
     merged["swing_to_b"] = -merged["swing_to_a"]
+    merged["vote_type"] = merged["vote_type_live"]
 
-    weighted_swing = (
+    total_baseline_votes = baseline["votes"].sum()
+    matched_baseline_votes = merged["votes_base"].sum()
+
+    raw_overall_swing = (
         merged["swing_to_a"] * merged["votes_live"]
     ).sum() / merged["votes_live"].sum()
 
-    projected = baseline.copy()
-    projected["projected_a"] = projected["a_pct"] + weighted_swing
+    count_share = matched_baseline_votes / total_baseline_votes
+    confidence = min(1.0, max(0.25, count_share * 2.5))
+    regressed_overall_swing = raw_overall_swing * confidence
 
-    total_votes = projected["votes"].sum()
+    type_swings = {}
 
-    projected_a = (
-        projected["projected_a"] * projected["votes"]
-    ).sum() / total_votes
+    for vote_type, group in merged.groupby("vote_type"):
+        raw_type_swing = (
+            group["swing_to_a"] * group["votes_live"]
+        ).sum() / group["votes_live"].sum()
 
+        baseline_type_votes = baseline[baseline["vote_type"] == vote_type]["votes"].sum()
+
+        if baseline_type_votes > 0:
+            type_count_share = group["votes_base"].sum() / baseline_type_votes
+        else:
+            type_count_share = count_share
+
+        type_confidence = min(1.0, max(0.25, type_count_share * 2.5))
+        type_swings[vote_type] = raw_type_swing * type_confidence
+
+    live_lookup = live.set_index("booth").to_dict("index")
+
+    projected_rows = []
+
+    for _, row in baseline.iterrows():
+        booth = row["booth"]
+        vote_type = row["vote_type"]
+
+        if booth in live_lookup:
+            live_row = live_lookup[booth]
+
+            projected_rows.append({
+                "booth": booth,
+                "vote_type": vote_type,
+                "status": "counted",
+                "a_votes": live_row["a_votes"],
+                "b_votes": live_row["b_votes"],
+                "votes": live_row["votes"]
+            })
+
+        else:
+            swing = type_swings.get(vote_type, regressed_overall_swing)
+
+            estimated_a_pct = clamp(row["a_pct"] + swing)
+            estimated_b_pct = 100 - estimated_a_pct
+
+            projected_rows.append({
+                "booth": booth,
+                "vote_type": vote_type,
+                "status": "estimated",
+                "a_votes": estimated_a_pct / 100 * row["votes"],
+                "b_votes": estimated_b_pct / 100 * row["votes"],
+                "votes": row["votes"]
+            })
+
+    projection = pd.DataFrame(projected_rows)
+
+    total_a = projection["a_votes"].sum()
+    total_b = projection["b_votes"].sum()
+    total_votes = total_a + total_b
+
+    projected_a = total_a / total_votes * 100
     projected_b = 100 - projected_a
-    counted = live["votes"].sum() / total_votes
+
+    counted_votes = projection[projection["status"] == "counted"]["votes"].sum()
+    counted = counted_votes / projection["votes"].sum()
 
     return {
-        "weighted_swing": weighted_swing,
+        "weighted_swing": regressed_overall_swing,
         "projected_a": projected_a,
         "projected_b": projected_b,
         "counted": counted
@@ -406,13 +496,13 @@ with left:
     )
 
     candidate_a_name = st.text_input(
-    "Candidate A name (challenger)",
-    placeholder="Enter candidate A name"
+        "Candidate A name (challenger)",
+        placeholder="Enter candidate A name"
     )
 
     candidate_b_name = st.text_input(
-    "Candidate B name (incumbent)",
-    placeholder="Enter candidate B name"
+        "Candidate B name (incumbent)",
+        placeholder="Enter candidate B name"
     )
 
     run_button = st.button("Run projection")
@@ -500,6 +590,7 @@ with right:
 
     merged_display = merged[[
         "booth",
+        "vote_type",
         "a_pct_base",
         "a_pct_live",
         "swing_to_a",
@@ -511,6 +602,7 @@ with right:
 
     merged_display.columns = [
         "Booth",
+        "Vote type",
         f"{candidate_a_display} baseline %",
         f"{candidate_a_display} live %",
         f"Swing to {candidate_a_display}",
