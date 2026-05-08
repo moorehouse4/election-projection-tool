@@ -95,7 +95,7 @@ input::placeholder {
     color: white !important;
 }
 
-/* Upload button */
+/* Main upload button */
 [data-testid="stFileUploaderDropzone"] button {
     background: white !important;
     color: #00486e !important;
@@ -106,13 +106,11 @@ input::placeholder {
     position: relative;
 }
 
-/* Hide duplicated internal text */
 [data-testid="stFileUploaderDropzone"] button div,
 [data-testid="stFileUploaderDropzone"] button span {
     display: none !important;
 }
 
-/* Custom single label */
 [data-testid="stFileUploaderDropzone"] button::after {
     content: "Upload";
     font-size: 16px;
@@ -120,7 +118,6 @@ input::placeholder {
     font-weight: 800;
 }
 
-/* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
     background: #003554 !important;
 }
@@ -129,6 +126,7 @@ input::placeholder {
     color: white !important;
 }
 
+/* Uploaded file display */
 [data-testid="stFileUploaderFile"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -138,6 +136,11 @@ input::placeholder {
 [data-testid="stFileUploaderFile"] * {
     color: white !important;
     fill: white !important;
+}
+
+/* Hide the second Upload button after file is uploaded */
+[data-testid="stFileUploaderFile"] + button {
+    display: none !important;
 }
 
 /* Run button */
