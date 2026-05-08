@@ -12,21 +12,21 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-#MainMenu, footer, header {visibility;shown}
+#MainMenu, footer, header {visibility: hidden;}
 
 .stApp {
     background: #3bc6e4;
 }
 
 .block-container {
-    max-width: 1150px;
-    padding-top: 3rem;
+    max-width: 1400px;
+    padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
 .hero {
     background: #00486e;
-    padding: 3rem;
+    padding: 2.5rem;
     border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.18);
     margin-bottom: 2rem;
@@ -42,12 +42,24 @@ st.markdown("""
 .hero p {
     color: white !important;
     font-size: 1.15rem;
-    max-width: 760px;
+    max-width: 850px;
 }
 
 h1, h2, h3, p, label, span {
     color: white !important;
     font-family: Arial, sans-serif;
+}
+
+.panel {
+    background: #00486e;
+    padding: 1.5rem;
+    border-radius: 22px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    margin-bottom: 1.2rem;
+}
+
+.panel h2, .panel h3, .panel p {
+    color: white !important;
 }
 
 [data-testid="stTextInput"],
@@ -62,7 +74,7 @@ input,
 textarea,
 [data-baseweb="input"] input {
     background: #00486e !important;
-    color: white  !important;
+    color: white !important;
     border: 1px solid white !important;
     border-radius: 10px !important;
 }
@@ -81,14 +93,14 @@ input::placeholder {
     color: white !important;
 }
 
-/* Button */
 .stButton > button {
     background: #00486e !important;
     color: white !important;
     border: 1px solid white !important;
     border-radius: 999px;
-    padding: 0.75rem 1.5rem;
+    padding: 0.8rem 1.6rem;
     font-weight: 800;
+    width: 100%;
 }
 
 .stButton > button:hover {
@@ -119,8 +131,13 @@ input::placeholder {
 }
 
 [data-testid="stDataFrame"] {
-    background: #00486e;
+    background: white;
     border-radius: 12px;
+}
+
+.small-note {
+    color: rgba(255,255,255,0.85) !important;
+    font-size: 0.95rem;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -148,34 +165,26 @@ def load_uploaded_file(file):
     else:
         df = pd.read_excel(file, header=None)
 
-    df = df.reset_index(drop=True)
+    df = df.dropna(how="all").reset_index(drop=True)
     df.columns = range(df.shape[1])
 
     return df
+
 
 def auto_detect_baseline(df):
     df = df.dropna(how="all").reset_index(drop=True)
     df.columns = range(df.shape[1])
 
-    # CASE 1: Original VEC-style file with 17 columns
     if df.shape[1] >= 17:
         base = df.iloc[14:].copy()
         base = base[[1, 7, 8, 16]]
         base.columns = ["booth", "a_votes", "b_votes", "votes"]
 
-    # CASE 2: Cleaned/simple file with 6 columns
     elif df.shape[1] == 6:
         base = df.copy()
-
-        # assumes:
-        # column 0 = booth
-        # column 1 = Independent votes
-        # column 2 = Liberal votes
-        # column 5 = total votes
         base = base[[0, 1, 2, 5]]
         base.columns = ["booth", "a_votes", "b_votes", "votes"]
 
-    # CASE 3: Cleaned/simple file with 4 columns
     elif df.shape[1] == 4:
         base = df.copy()
         base.columns = ["booth", "a_votes", "b_votes", "votes"]
@@ -183,7 +192,7 @@ def auto_detect_baseline(df):
     else:
         st.error(
             f"The uploaded file has {df.shape[1]} columns. "
-            "Please upload either the original VEC file, or a cleaned file with booth, Independent votes, Liberal votes, and total votes."
+            "Upload the original VEC file, a 6-column cleaned file, or a 4-column file: booth, candidate A, candidate B, total votes."
         )
         st.stop()
 
@@ -205,6 +214,8 @@ def auto_detect_baseline(df):
         st.stop()
 
     return base[["booth", "a_pct", "b_pct", "votes"]]
+
+
 def fetch_live_page(url):
     response = requests.get(url, timeout=20)
     response.raise_for_status()
@@ -295,83 +306,104 @@ def project_result(live, baseline):
     }, merged
 
 
-uploaded_file = st.file_uploader(
-    "Upload baseline results file",
-    type=["xls", "xlsx", "csv"]
-)
+left, right = st.columns([1, 2.2], gap="large")
 
-live_url = st.text_input(
-    "Paste current booth-level results page link",
-    placeholder="https://www.vec.vic.gov.au/..."
-)
+with left:
+    st.markdown('<div class="panel"><h2>Inputs</h2><p class="small-note">Upload the baseline file and paste the live booth-level results link.</p></div>', unsafe_allow_html=True)
 
-candidate_a_name = st.text_input("Candidate A name", "Independent")
-candidate_b_name = st.text_input("Candidate B name", "Liberal")
+    uploaded_file = st.file_uploader(
+        "Upload baseline results file",
+        type=["xls", "xlsx", "csv"]
+    )
 
-if uploaded_file is None:
-    st.info("Upload a baseline results file to begin.")
-    st.stop()
+    live_url = st.text_input(
+        "Paste current booth-level results page link",
+        placeholder="https://www.vec.vic.gov.au/..."
+    )
 
-if not live_url:
-    st.info("Paste a booth-level live results link to begin.")
-    st.stop()
+    candidate_a_name = st.text_input("Candidate A name", "Independent")
+    candidate_b_name = st.text_input("Candidate B name", "Liberal")
 
-baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
+    run_button = st.button("Run projection")
 
-if baseline.empty:
-    st.error("Could not read the uploaded baseline file. Make sure it uses the same VEC-style format.")
-    st.stop()
+    st.markdown("""
+    <div class="panel">
+        <h3>Accepted file formats</h3>
+        <p class="small-note">
+            Original VEC Excel file, cleaned 6-column file, or simple 4-column file:
+            booth, candidate A votes, candidate B votes, total votes.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-try:
-    html = fetch_live_page(live_url)
-except Exception as e:
-    st.error(f"Could not fetch live results page: {e}")
-    st.stop()
+with right:
+    if uploaded_file is None:
+        st.info("Upload a baseline results file to begin.")
+        st.stop()
 
-live = parse_live_results(html)
+    if not live_url:
+        st.info("Paste a booth-level live results link to begin.")
+        st.stop()
 
-if live.empty:
-    st.warning("No booth-level live results were parsed.")
-    st.stop()
+    if not run_button:
+        st.info("Click Run projection when ready.")
+        st.stop()
 
-result, merged = project_result(live, baseline)
+    baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
 
-if result is None:
-    st.error("Live booths were found, but none matched the baseline booth names.")
-    st.stop()
+    try:
+        html = fetch_live_page(live_url)
+    except Exception as e:
+        st.error(f"Could not fetch live results page: {e}")
+        st.stop()
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Matched booths", len(merged))
-c2.metric("Counted vs baseline", f"{result['counted'] * 100:.1f}%")
-c3.metric(f"Projected {candidate_a_name}", f"{result['projected_a']:.2f}%")
-c4.metric(f"Projected {candidate_b_name}", f"{result['projected_b']:.2f}%")
+    live = parse_live_results(html)
 
-st.metric(f"Swing to {candidate_a_name}", f"{result['weighted_swing']:.2f}%")
+    if live.empty:
+        st.warning("No booth-level live results were parsed.")
+        st.stop()
 
-if result["projected_a"] > result["projected_b"]:
-    st.success(f"Current projection: {candidate_a_name} ahead")
-else:
-    st.error(f"Current projection: {candidate_b_name} ahead")
+    result, merged = project_result(live, baseline)
 
-st.subheader("Booth-by-booth swing")
+    if result is None:
+        st.error("Live booths were found, but none matched the baseline booth names.")
+        st.stop()
 
-merged_display = merged[[
-    "booth",
-    "a_pct_base",
-    "a_pct_live",
-    "swing_to_a",
-    "votes_live"
-]].copy()
+    st.markdown('<div class="panel"><h2>Projection</h2></div>', unsafe_allow_html=True)
 
-merged_display.columns = [
-    "Booth",
-    f"{candidate_a_name} baseline %",
-    f"{candidate_a_name} live %",
-    f"Swing to {candidate_a_name}",
-    "Live votes"
-]
+    c1, c2 = st.columns(2)
+    c1.metric(f"Projected {candidate_a_name}", f"{result['projected_a']:.2f}%")
+    c2.metric(f"Projected {candidate_b_name}", f"{result['projected_b']:.2f}%")
 
-st.dataframe(
-    merged_display.sort_values("Live votes", ascending=False),
-    use_container_width=True
-)
+    c3, c4, c5 = st.columns(3)
+    c3.metric("Matched booths", len(merged))
+    c4.metric("Counted vs baseline", f"{result['counted'] * 100:.1f}%")
+    c5.metric(f"Swing to {candidate_a_name}", f"{result['weighted_swing']:.2f}%")
+
+    if result["projected_a"] > result["projected_b"]:
+        st.success(f"Current projection: {candidate_a_name} ahead")
+    else:
+        st.error(f"Current projection: {candidate_b_name} ahead")
+
+    st.subheader("Booth-by-booth swing")
+
+    merged_display = merged[[
+        "booth",
+        "a_pct_base",
+        "a_pct_live",
+        "swing_to_a",
+        "votes_live"
+    ]].copy()
+
+    merged_display.columns = [
+        "Booth",
+        f"{candidate_a_name} baseline %",
+        f"{candidate_a_name} live %",
+        f"Swing to {candidate_a_name}",
+        "Live votes"
+    ]
+
+    st.dataframe(
+        merged_display.sort_values("Live votes", ascending=False),
+        use_container_width=True
+    )
