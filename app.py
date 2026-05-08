@@ -4,65 +4,104 @@ import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 
+st.set_page_config(
+    page_title="Election Projection Tool",
+    page_icon="🗳️",
+    layout="wide"
+)
+
 st.markdown("""
 <style>
-.main {
-    background-color: #f7f9fb;
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+.stApp {
+    background: linear-gradient(135deg, #001649 0%, #03354F 45%, #05ABC3 100%);
+}
+
+.block-container {
+    max-width: 1150px;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.hero {
+    background: white;
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+    margin-bottom: 2rem;
+}
+
+.hero h1 {
+    color: #001649;
+    font-size: 3rem;
+    line-height: 1.05;
+    margin-bottom: 0.8rem;
+}
+
+.hero p {
+    color: #334155;
+    font-size: 1.15rem;
+    max-width: 760px;
+}
+
+.card {
+    background: rgba(255,255,255,0.96);
+    padding: 1.5rem;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    margin-bottom: 1.5rem;
 }
 
 h1, h2, h3 {
     color: #001649;
+    font-weight: 800;
+}
+
+p, label, div {
     font-family: Arial, sans-serif;
 }
 
 .stButton > button {
-    background-color: #05abc3;
+    background: #05ABC3;
     color: white;
-    border-radius: 8px;
     border: none;
-    padding: 0.6rem 1.2rem;
-    font-weight: bold;
+    border-radius: 999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 800;
+    font-size: 1rem;
 }
 
 .stButton > button:hover {
-    background-color: #038da3;
+    background: #001649;
     color: white;
 }
 
 [data-testid="stMetric"] {
-    background-color: white;
-    padding: 18px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: white;
+    border-radius: 18px;
+    padding: 1.2rem;
+    border-left: 6px solid #05ABC3;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+[data-testid="stAlert"] {
+    border-radius: 16px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-
-st.title("Election Projection Tool")
-st.write(
-    "Upload a baseline Excel/CSV file, paste a current booth-level results link, "
-    "choose the columns, and estimate the projected result from booth-level swing."
-)
-
-st.warning(
-    "For VEC pages, use the booth-level 2CP results page, not just the district summary page."
-)
-
-uploaded_file = st.file_uploader(
-    "Upload baseline results file",
-    type=["xls", "xlsx", "csv"]
-)
-
-live_url = st.text_input(
-    "Paste current booth-level results page link",
-    placeholder="https://www.vec.vic.gov.au/..."
-)
-
-candidate_a_name = st.text_input("Candidate A name", "Independent")
-candidate_b_name = st.text_input("Candidate B name", "Liberal")
-
-st.divider()
+st.markdown("""
+<div class="hero">
+    <h1>Election Projection Tool</h1>
+    <p>
+        Upload a baseline results file, paste a live booth-level results link,
+        and estimate the projected result using booth-by-booth swing.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 
 def clean_booth(x):
@@ -129,17 +168,17 @@ def parse_live_results(html, booth_names):
         if booth in skip:
             continue
 
-        lib_votes = int(match.group(2))
-        ind_votes = int(match.group(3))
+        b_votes = int(match.group(2))
+        a_votes = int(match.group(3))
         total_votes = int(match.group(6))
 
-        if total_votes <= 0 or (lib_votes + ind_votes) <= 0:
+        if total_votes <= 0 or (a_votes + b_votes) <= 0:
             continue
 
         rows.append({
             "booth": booth,
-            "a_pct": ind_votes / (ind_votes + lib_votes) * 100,
-            "b_pct": lib_votes / (ind_votes + lib_votes) * 100,
+            "a_pct": a_votes / (a_votes + b_votes) * 100,
+            "b_pct": b_votes / (a_votes + b_votes) * 100,
             "votes": total_votes
         })
 
@@ -176,7 +215,6 @@ def project_result(live, baseline):
     ).sum() / total_votes
 
     projected_b = 100 - projected_a
-
     counted = live["votes"].sum() / total_votes
 
     return {
@@ -187,12 +225,30 @@ def project_result(live, baseline):
     }, merged
 
 
+st.markdown('<div class="card">', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader(
+    "Upload baseline results file",
+    type=["xls", "xlsx", "csv"]
+)
+
+live_url = st.text_input(
+    "Paste current booth-level results page link",
+    placeholder="https://www.vec.vic.gov.au/..."
+)
+
+candidate_a_name = st.text_input("Candidate A name", "Independent")
+candidate_b_name = st.text_input("Candidate B name", "Liberal")
+
+st.markdown('</div>', unsafe_allow_html=True)
+
 if uploaded_file is None:
     st.info("Upload a baseline results file to begin.")
     st.stop()
 
 raw_df = load_uploaded_file(uploaded_file)
 
+st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("1. Check uploaded file")
 st.write("Preview the uploaded file and identify the row where real booth data begins.")
 st.dataframe(raw_df.head(30), use_container_width=True)
@@ -207,15 +263,35 @@ start_row = st.number_input(
     step=1
 )
 
-booth_col = st.selectbox("Booth/location column", columns, index=1 if len(columns) > 1 else 0)
-a_col = st.selectbox(f"{candidate_a_name} votes column", columns, index=7 if len(columns) > 7 else 0)
-b_col = st.selectbox(f"{candidate_b_name} votes column", columns, index=8 if len(columns) > 8 else 0)
-total_col = st.selectbox("Total votes column", columns, index=16 if len(columns) > 16 else 0)
+booth_col = st.selectbox(
+    "Booth/location column",
+    columns,
+    index=1 if len(columns) > 1 else 0
+)
+
+a_col = st.selectbox(
+    f"{candidate_a_name} votes column",
+    columns,
+    index=7 if len(columns) > 7 else 0
+)
+
+b_col = st.selectbox(
+    f"{candidate_b_name} votes column",
+    columns,
+    index=8 if len(columns) > 8 else 0
+)
+
+total_col = st.selectbox(
+    "Total votes column",
+    columns,
+    index=16 if len(columns) > 16 else 0
+)
 
 st.info(
     "For Nepean 2022: start row = 14, booth = column 1, "
     "Independent = column 7, Liberal = column 8, total votes = column 16."
 )
+st.markdown('</div>', unsafe_allow_html=True)
 
 if st.button("Run projection"):
     if not live_url:
@@ -235,9 +311,11 @@ if st.button("Run projection"):
         st.error("Could not build baseline. Check the start row and selected columns.")
         st.stop()
 
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("2. Baseline loaded")
     st.success(f"Loaded {len(baseline)} baseline booths.")
     st.dataframe(baseline, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     try:
         html = fetch_live_page(live_url)
@@ -247,20 +325,20 @@ if st.button("Run projection"):
 
     live = parse_live_results(html, baseline["booth"].tolist())
 
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("3. Live results parsed")
 
     if live.empty:
-        st.warning(
-            "No booth-level live results were parsed. "
-            "Use the booth-level 2CP results page, not the district summary page."
-        )
+        st.warning("No booth-level live results were parsed.")
         st.stop()
 
     st.success(f"Parsed {len(live)} live booths.")
     st.dataframe(live, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     result, merged = project_result(live, baseline)
 
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("4. Projection")
 
     if result is None:
@@ -280,6 +358,9 @@ if st.button("Run projection"):
     else:
         st.error(f"Current projection: {candidate_b_name} ahead")
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("5. Booth-by-booth swing")
 
     merged_display = merged[[
@@ -302,3 +383,4 @@ if st.button("Run projection"):
         merged_display.sort_values("Live votes", ascending=False),
         use_container_width=True
     )
+    st.markdown('</div>', unsafe_allow_html=True)
