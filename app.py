@@ -91,43 +91,14 @@ input::placeholder {
     padding: 1rem !important;
 }
 
+/* Keep uploader label text white */
 [data-testid="stFileUploader"] label,
 [data-testid="stFileUploader"] small,
 [data-testid="stFileUploader"] p {
     color: white !important;
 }
 
-/* Hide Streamlit's messy upload button text */
-[data-testid="stFileUploaderDropzone"] > button {
-    background: white !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.45rem 0.9rem !important;
-    width: auto !important;
-    min-width: auto !important;
-    font-size: 0 !important;
-}
-
-/* Hide all internal duplicated upload text */
-[data-testid="stFileUploaderDropzone"] > button * {
-    display: none !important;
-}
-
-/* Add one clean upload label */
-[data-testid="stFileUploaderDropzone"] > button::after {
-    content: "Upload";
-    color: #00486e !important;
-    font-size: 0.9rem !important;
-}
-
-/* Hover */
-[data-testid="stFileUploaderDropzone"] > button:hover {
-    background: #003554 !important;
-}
-
-[data-testid="stFileUploaderDropzone"] > button:hover::after {
-    color: white !important;
-}
+/* DO NOT style the internal upload button */
 
 /* Uploaded file row */
 [data-testid="stFileUploaderFile"] {
@@ -141,6 +112,7 @@ input::placeholder {
     fill: #00486e !important;
     font-size: 0.85rem !important;
 }
+
 /* Run button */
 .stButton > button {
     background: #00486e !important;
