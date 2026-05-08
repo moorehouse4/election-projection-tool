@@ -406,14 +406,14 @@ with left:
     )
 
     candidate_a_name = st.text_input(
-        "Candidate A name",
-        placeholder="Enter candidate A name"
-    )
+    "Candidate A name (incumbent or main opponent)",
+    placeholder="Enter candidate A name"
+)
 
-    candidate_b_name = st.text_input(
-        "Candidate B name",
-        placeholder="Enter candidate B name"
-    )
+candidate_b_name = st.text_input(
+    "Candidate B name (community independent)",
+    placeholder="Enter candidate B name"
+)
 
     run_button = st.button("Run projection")
 
