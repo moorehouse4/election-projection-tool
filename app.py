@@ -12,7 +12,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-#MainMenu, footer, header {visibility: hidden;}
+#MainMenu, footer, header 
 
 .stApp {
     background: #3bc6e4;
