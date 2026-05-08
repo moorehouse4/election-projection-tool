@@ -92,25 +92,25 @@ def parse_live_results(html, booth_names):
 
         remainder = lower.replace(matched_booth, "", 1).strip()
 
-        nums = re.findall(r"\b\d{1,3}(?:,\d{3})*\b", remainder)
-        nums = [int(n.replace(",", "")) for n in nums]
+        nums = re.findall(r"\d+", remainder)
+        nums = [int(n) for n in nums]
 
-        if len(nums) < 5:
+        if len(nums) < 4:
             continue
 
-        # VEC 2CP voting-centre format:
-        # Candidate B votes, Candidate A votes, miss-sorts, informal, total votes polled
-        b_votes = nums[0]
-        a_votes = nums[1]
+        # VEC order:
+        # Liberal votes, Independent votes, miss-sorts, informal, total votes
+        lib_votes = nums[0]
+        ind_votes = nums[1]
         total_votes = nums[-1]
 
-        if total_votes <= 0 or (a_votes + b_votes) <= 0:
+        if total_votes <= 0 or (ind_votes + lib_votes) <= 0:
             continue
 
         rows.append({
             "booth": matched_booth,
-            "a_pct": a_votes / (a_votes + b_votes) * 100,
-            "b_pct": b_votes / (a_votes + b_votes) * 100,
+            "a_pct": ind_votes / (ind_votes + lib_votes) * 100,
+            "b_pct": lib_votes / (ind_votes + lib_votes) * 100,
             "votes": total_votes
         })
 
