@@ -200,7 +200,7 @@ st.markdown("""
 <div class="hero">
     <h1>Election Projection Tool</h1>
     <p>
-        This tool is made for Community Indpendent Candidates running an election campaign is state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.   
+        This tool is made for Community Indpendent Candidates running an election campaign is state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.   
         </p>
         Upload a baseline results file, paste a live booth-level results link,
         and estimate the projected result using booth-by-booth swing.
