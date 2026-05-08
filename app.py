@@ -559,8 +559,10 @@ with right:
         st.stop()
 
     st.markdown('<div class="panel"><h2>Projection</h2></div>', unsafe_allow_html=True)
+
+    
     def result_card(label, value, colour="white"):
-    st.markdown(
+        st.markdown(
         f"""
         <div style="
             background:#00486e;
