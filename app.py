@@ -12,7 +12,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-#MainMenu, footer, header {visibility: hidden;}
+#MainMenu, footer, header {visibility: show;}
 
 * {
     font-family: "Zalando Sans Expanded Extra Bold", "Zalando Sans Expanded", Arial, sans-serif !important;
