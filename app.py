@@ -528,10 +528,10 @@ with right:
         st.stop()
 
     if not run_button:
-    st.info("Click Run projection when ready.")
-else:
-    candidate_a_display = candidate_a_name or "Candidate A"
-    candidate_b_display = candidate_b_name or "Candidate B"
+        st.info("Click Run projection when ready.")
+        else:
+        candidate_a_display = candidate_a_name or "Candidate A"
+        candidate_b_display = candidate_b_name or "Candidate B"
 
     baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
 
