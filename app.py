@@ -519,7 +519,7 @@ with left:
     """, unsafe_allow_html=True)
 
 with right:
-    if uploaded_file is None:
+if uploaded_file is None:
     st.info("Upload a baseline results file to begin.")
     st.stop()
 
