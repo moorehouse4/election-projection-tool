@@ -12,6 +12,20 @@ st.set_page_config(
 
 
 st.markdown("""
+<style>
+.block-container {
+    max-width: 1400px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+.stApp {
+    background: #3bc6e4;
+}
+
+st.markdown("""
 <div class="hero">
     <h1>Upload Election Results & Generate Live Projections</h1>
     <p>
@@ -21,10 +35,6 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
-
-.stApp {
-    background: #3bc6e4;
-}
 
 .block-container {
     max-width: 1400px;
