@@ -84,6 +84,7 @@ input::placeholder {
     margin-bottom: 1rem;
 }
 
+/* Dropzone */
 [data-testid="stFileUploaderDropzone"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -91,23 +92,43 @@ input::placeholder {
     padding: 1rem !important;
 }
 
-[data-testid="stFileUploaderDropzone"] * {
+/* Keep labels readable */
+[data-testid="stFileUploader"] label,
+[data-testid="stFileUploader"] small,
+[data-testid="stFileUploader"] p {
     color: white !important;
 }
 
-/* Upload button - no fake duplicate text */
+/* File name row after upload */
+[data-testid="stFileUploaderFile"] {
+    background: white !important;
+    border-radius: 10px !important;
+    border: 1px solid white !important;
+}
+
+/* File name text */
+[data-testid="stFileUploaderFile"] * {
+    color: #00486e !important;
+    fill: #00486e !important;
+    font-size: 0.85rem !important;
+}
+
+/* Upload/Add button */
 [data-testid="stFileUploaderDropzone"] button {
     background: white !important;
     color: #00486e !important;
-    border: none !important;
+    border: 1px solid white !important;
     border-radius: 8px !important;
-    padding: 0.45rem 1rem !important;
+    padding: 0.35rem 0.8rem !important;
     width: auto !important;
     min-width: auto !important;
+    font-size: 0.85rem !important;
 }
 
+/* Text inside Upload/Add button */
 [data-testid="stFileUploaderDropzone"] button * {
     color: #00486e !important;
+    font-size: 0.85rem !important;
 }
 
 /* Hover */
@@ -119,19 +140,6 @@ input::placeholder {
 [data-testid="stFileUploaderDropzone"] button:hover * {
     color: white !important;
 }
-
-/* Uploaded file display */
-[data-testid="stFileUploaderFile"] {
-    background: #00486e !important;
-    border: 1px solid white !important;
-    border-radius: 12px !important;
-}
-
-[data-testid="stFileUploaderFile"] * {
-    color: white !important;
-    fill: white !important;
-}
-
 /* Run button */
 .stButton > button {
     background: #00486e !important;
