@@ -1,7 +1,8 @@
-streamlit
+dash
 pandas
 requests
+beautifulsoup4
 openpyxl
 xlrd
-beautifulsoup4
+gunicorn
 lxml
