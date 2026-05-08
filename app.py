@@ -228,9 +228,7 @@ st.markdown("""
     <p>
         This tool is made for Community Independent Candidates running election campaigns in state and federal elections in Australia. This tool helps predict two-candidate preferred results by comparing previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as official results. This site is not authorised by the VEC/AEC and was made by an independent private individual.
     </p>
-
-    <br><br>
-
+    <div style="height: 2rem;"></div>
     <p>
         <strong>Instructions:</strong> Upload a baseline results file, paste a live booth-level results link, and estimate the projected result using booth-by-booth swing.
     </p>
