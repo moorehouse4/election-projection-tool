@@ -17,7 +17,7 @@ footer {visibility: hidden;}
 header {visibility: hidden;}
 
 .stApp {
-    background: linear-gradient(135deg, #001649 0%, #03354F 45%, #05ABC3 100%);
+    background: #3bc6e4;
 }
 
 .block-container {
@@ -26,47 +26,85 @@ header {visibility: hidden;}
     padding-bottom: 3rem;
 }
 
+/* Main page text outside boxes */
+h1, h2, h3, p, label, div, span {
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+/* Hero/header panel */
 .hero {
-    background: #3bc6e4;
+    background: #00486e;
     padding: 3rem;
     border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.18);
     margin-bottom: 2rem;
 }
 
-.hero h1 {
-    color: #001649;
-    font-size: 3rem;
-    line-height: 1.05;
-    margin-bottom: 0.8rem;
-}
-
+.hero h1,
 .hero p {
-    color: #334155;
-    font-size: 1.15rem;
-    max-width: 760px;
+    color: white;
 }
 
+/* Input/content boxes */
 .card {
-    background: #3bc6e4;
+    background: #00486e;
     padding: 1.5rem;
     border-radius: 18px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.12);
     margin-bottom: 1.5rem;
 }
 
-h1, h2, h3 {
-    color: #001649;
-    font-weight: 800;
+/* Text inside boxes */
+.card h1,
+.card h2,
+.card h3,
+.card p,
+.card label,
+.card div,
+.card span {
+    color: white;
 }
 
-p, label, div {
-    font-family: Arial, sans-serif;
+/* Actual text inputs/select boxes */
+input,
+textarea,
+select,
+[data-baseweb="input"],
+[data-baseweb="select"],
+[data-baseweb="textarea"] {
+    background-color: white !important;
+    color: #00486e !important;
 }
 
+/* Typed text inside input boxes */
+input *,
+textarea *,
+select * {
+    color: #00486e !important;
+}
+
+/* File uploader box */
+[data-testid="stFileUploader"] {
+    background: #00486e;
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+[data-testid="stFileUploader"] * {
+    color: white;
+}
+
+/* Dataframes */
+[data-testid="stDataFrame"] {
+    background: white;
+    border-radius: 12px;
+}
+
+/* Buttons */
 .stButton > button {
-    background: #3bc6e4;
-    color: #3bc6e4;
+    background: white;
+    color: #00486e;
     border: none;
     border-radius: 999px;
     padding: 0.75rem 1.5rem;
@@ -75,20 +113,42 @@ p, label, div {
 }
 
 .stButton > button:hover {
-    background: #001649;
+    background: #00486e;
     color: white;
+    border: 2px solid white;
 }
 
+/* Metrics */
 [data-testid="stMetric"] {
     background: white;
     border-radius: 18px;
     padding: 1.2rem;
-    border-left: 6px solid #05ABC3;
+    border-left: 6px solid #00486e;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
+[data-testid="stMetric"] * {
+    color: #00486e !important;
+}
+
+/* Alerts */
 [data-testid="stAlert"] {
     border-radius: 16px;
+}
+
+[data-testid="stAlert"] * {
+    color: #00486e !important;
+}
+
+/* Number input */
+[data-testid="stNumberInput"] input {
+    color: #00486e !important;
+    background: white !important;
+}
+
+/* Selectbox visible text */
+[data-baseweb="select"] div {
+    color: #00486e !important;
 }
 </style>
 """, unsafe_allow_html=True)
