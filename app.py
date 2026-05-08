@@ -560,32 +560,59 @@ with right:
 
     st.markdown('<div class="panel"><h2>Projection</h2></div>', unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    c1.metric(f"Projected {candidate_a_display}", f"{result['projected_a']:.2f}%")
-    c2.metric(f"Projected {candidate_b_display}", f"{result['projected_b']:.2f}%")
-
-    c3, c4, c5 = st.columns(3)
-    c3.metric("Matched booths", len(merged))
-    c4.metric("Counted vs baseline", f"{result['counted'] * 100:.1f}%")
-
-    swing_colour = "#ff4b4b" if result["weighted_swing"] < 0 else "white"
-    c5.markdown(
+    def result_card(label, value, colour="white"):
+    st.markdown(
         f"""
         <div style="
             background:#00486e;
             border:1px solid white;
             border-radius:18px;
             padding:1.2rem;
+            min-height:120px;
         ">
-            <div style="color:white;font-size:0.9rem;">Swing to {candidate_a_display}</div>
-            <div style="color:{swing_colour};font-size:2rem;font-weight:800;">
-                {result['weighted_swing']:.2f}%
+            <div style="color:white;font-size:0.9rem;">{label}</div>
+            <div style="color:{colour};font-size:2rem;font-weight:800;">
+                {value}
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
+
+candidate_a_colour = "#21c45d" if result["projected_a"] >= 50 else "#ff4b4b"
+candidate_b_colour = "#21c45d" if result["projected_b"] >= 50 else "#ff4b4b"
+swing_colour = "#ff4b4b" if result["weighted_swing"] < 0 else "#21c45d"
+
+c1, c2 = st.columns(2)
+with c1:
+    result_card(
+        f"Projected {candidate_a_display}",
+        f"{result['projected_a']:.2f}%",
+        candidate_a_colour
+    )
+
+with c2:
+    result_card(
+        f"Projected {candidate_b_display}",
+        f"{result['projected_b']:.2f}%",
+        candidate_b_colour
+    )
+
+c3, c4, c5 = st.columns(3)
+with c3:
+    result_card("Matched booths", len(merged), "white")
+
+with c4:
+    result_card("Counted vs baseline", f"{result['counted'] * 100:.1f}%", "white")
+
+with c5:
+    result_card(
+        f"Swing to {candidate_a_display}",
+        f"{result['weighted_swing']:.2f}%",
+        swing_colour
+    )
+    
     if result["projected_a"] > result["projected_b"]:
         st.success(f"Current projection: {candidate_a_display} ahead")
     else:
