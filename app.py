@@ -9,6 +9,119 @@ st.set_page_config(
     page_icon="🗳️",
     layout="wide"
 )
+st.markdown("""
+<style>
+#MainMenu, footer, header {visibility: hidden;}
+
+.stApp {
+    background: #3bc6e4;
+}
+
+.block-container {
+    max-width: 1150px;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.hero {
+    background: #00486e;
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+    margin-bottom: 2rem;
+}
+
+.hero h1, .hero p {
+    color: white;
+}
+
+h1, h2, h3, p, label, span {
+    color: white !important;
+}
+
+/* make widgets transparent so no weird white boxes */
+[data-testid="stTextInput"],
+[data-testid="stFileUploader"],
+[data-testid="stSelectbox"],
+[data-testid="stNumberInput"] {
+    background: #00486e !important;
+    border-radius: 18px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* actual input fields */
+input,
+textarea,
+[data-baseweb="input"] input {
+    background: #00486e !important;
+    color: white !important;
+    border: 1px solid white !important;
+    border-radius: 10px !important;
+}
+
+/* placeholder text */
+input::placeholder {
+    color: rgba(255,255,255,0.75) !important;
+}
+
+/* file uploader inner drop zone */
+[data-testid="stFileUploaderDropzone"] {
+    background: #00486e !important;
+    border: 1px solid white !important;
+    border-radius: 12px;
+}
+
+[data-testid="stFileUploaderDropzone"] * {
+    color: white !important;
+}
+
+/* buttons */
+.stButton > button {
+    background: white;
+    color: #00486e;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 800;
+}
+
+.stButton > button:hover {
+    background: #00486e;
+    color: white;
+    border: 2px solid white;
+}
+
+/* info/warning boxes */
+[data-testid="stAlert"] {
+    background: #00486e !important;
+    border-radius: 16px;
+    border: 1px solid white;
+}
+
+[data-testid="stAlert"] * {
+    color: white !important;
+}
+
+/* metrics */
+[data-testid="stMetric"] {
+    background: #00486e;
+    border-radius: 18px;
+    padding: 1.2rem;
+    border: 1px solid white;
+}
+
+[data-testid="stMetric"] * {
+    color: white !important;
+}
+
+/* dataframes */
+[data-testid="stDataFrame"] {
+    background: white;
+    border-radius: 12px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("""
