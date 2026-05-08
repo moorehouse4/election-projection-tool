@@ -520,19 +520,16 @@ with left:
 
 with right:
     if uploaded_file is None:
-        st.info("Upload a baseline results file to begin.")
-        st.stop()
+    st.info("Upload a baseline results file to begin.")
+    st.stop()
 
-    if not live_url:
-        st.info("Paste a booth-level live results link to begin.")
-        st.stop()
+if not live_url:
+    st.info("Paste a booth-level live results link to begin.")
+    st.stop()
 
-    if not run_button:
-        st.info("Click Run projection when ready.")
-        else:
-        candidate_a_display = candidate_a_name or "Candidate A"
-        candidate_b_display = candidate_b_name or "Candidate B"
-
+if not run_button:
+    st.info("Click Run projection when ready.")
+    st.stop()
     baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
 
     # keep the rest of your projection code indented under this else
