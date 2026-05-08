@@ -620,5 +620,3 @@ with right:
     else:
         st.error(f"Current projection: {candidate_b_display} ahead")
 
-
-    st.dataframe(styled_table, use_container_width=True)
