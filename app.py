@@ -4,7 +4,45 @@ import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 
-st.set_page_config(page_title="Election Projection Tool", layout="wide")
+st.set_page_config(
+    page_title="Election Projection Tool",
+    page_icon="🗳️",
+    layout="wide"
+)
+
+st.markdown("""
+<style>
+.main {
+    background-color: #f7f9fb;
+}
+
+h1, h2, h3 {
+    color: #001649;
+    font-family: Arial, sans-serif;
+}
+
+.stButton > button {
+    background-color: #05abc3;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: bold;
+}
+
+.stButton > button:hover {
+    background-color: #038da3;
+    color: white;
+}
+
+[data-testid="stMetric"] {
+    background-color: white;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("Election Projection Tool")
 st.write(
