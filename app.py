@@ -62,7 +62,7 @@ input,
 textarea,
 [data-baseweb="input"] input {
     background: #00486e !important;
-    color: white !important;
+    color: #00486e  !important;
     border: 1px solid white !important;
     border-radius: 10px !important;
 }
@@ -154,25 +154,38 @@ def load_uploaded_file(file):
     return df
 
 def auto_detect_baseline(df):
-    # Fixed for the VEC Nepean 2022 spreadsheet format
-    # row 14 onwards = booth rows
-    # column 1 = booth
-    # column 7 = Independent
-    # column 8 = Liberal
-    # column 16 = total votes
+    df = df.dropna(how="all").reset_index(drop=True)
+    df.columns = range(df.shape[1])
 
-    required_columns = [1, 7, 8, 16]
+    # CASE 1: Original VEC-style file with 17 columns
+    if df.shape[1] >= 17:
+        base = df.iloc[14:].copy()
+        base = base[[1, 7, 8, 16]]
+        base.columns = ["booth", "a_votes", "b_votes", "votes"]
 
-    if df.shape[1] < 17:
+    # CASE 2: Cleaned/simple file with 6 columns
+    elif df.shape[1] == 6:
+        base = df.copy()
+
+        # assumes:
+        # column 0 = booth
+        # column 1 = Independent votes
+        # column 2 = Liberal votes
+        # column 5 = total votes
+        base = base[[0, 1, 2, 5]]
+        base.columns = ["booth", "a_votes", "b_votes", "votes"]
+
+    # CASE 3: Cleaned/simple file with 4 columns
+    elif df.shape[1] == 4:
+        base = df.copy()
+        base.columns = ["booth", "a_votes", "b_votes", "votes"]
+
+    else:
         st.error(
-            f"The uploaded file has only {df.shape[1]} columns. "
-            "Please upload the original VEC Excel file, not a modified/exported version."
+            f"The uploaded file has {df.shape[1]} columns. "
+            "Please upload either the original VEC file, or a cleaned file with booth, Independent votes, Liberal votes, and total votes."
         )
         st.stop()
-
-    base = df.iloc[14:].copy()
-    base = base[required_columns]
-    base.columns = ["booth", "a_votes", "b_votes", "votes"]
 
     base = base.dropna(subset=["booth", "votes"])
 
@@ -187,8 +200,11 @@ def auto_detect_baseline(df):
     base["a_pct"] = base["a_votes"] / (base["a_votes"] + base["b_votes"]) * 100
     base["b_pct"] = 100 - base["a_pct"]
 
-    return base[["booth", "a_pct", "b_pct", "votes"]]
+    if base.empty:
+        st.error("Could not build baseline from the uploaded file.")
+        st.stop()
 
+    return base[["booth", "a_pct", "b_pct", "votes"]]
 def fetch_live_page(url):
     response = requests.get(url, timeout=20)
     response.raise_for_status()
