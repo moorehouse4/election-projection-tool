@@ -406,12 +406,12 @@ with left:
     )
 
     candidate_a_name = st.text_input(
-    "Candidate A name (incumbent or main opponent)",
+    "Candidate A name (incumbent)",
     placeholder="Enter candidate A name"
     )
 
     candidate_b_name = st.text_input(
-    "Candidate B name (community independent)",
+    "Candidate B name (challenger)",
     placeholder="Enter candidate B name"
     )
 
