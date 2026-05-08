@@ -68,12 +68,12 @@ input::placeholder {
 /* file uploader inner drop zone */
 [data-testid="stFileUploaderDropzone"] {
     background: #00486e !important;
-    border: 1px solid white !important;
+    border: 1px #00486e !important;
     border-radius: 12px;
 }
 
 [data-testid="stFileUploaderDropzone"] * {
-    color: white !important;
+    color: #00486e !important;
 }
 
 /* buttons */
