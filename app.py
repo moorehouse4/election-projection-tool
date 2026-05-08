@@ -141,101 +141,53 @@ def clean_booth(x):
 
 
 def load_uploaded_file(file):
+    file.seek(0)
+
     if file.name.endswith(".csv"):
-        return pd.read_csv(file, header=None)
-
-    try:
+        df = pd.read_csv(file, header=None)
+    else:
         df = pd.read_excel(file, header=None)
-    except Exception:
-        file.seek(0)
-        df = pd.read_excel(file, header=None, engine="xlrd")
 
-    # remove completely empty rows/columns
-    df = df.dropna(how="all")
-    df = df.dropna(axis=1, how="all")
-
-    # reset column numbers back to 0,1,2,3...
     df = df.reset_index(drop=True)
     df.columns = range(df.shape[1])
 
     return df
 
-
 def auto_detect_baseline(df):
-    # Clean completely empty rows/columns
-    df = df.dropna(how="all").dropna(axis=1, how="all").reset_index(drop=True)
-    df.columns = range(df.shape[1])
+    # Fixed for the VEC Nepean 2022 spreadsheet format
+    # row 14 onwards = booth rows
+    # column 1 = booth
+    # column 7 = Independent
+    # column 8 = Liberal
+    # column 16 = total votes
 
-    # Find the first row that looks like booth data
-    start_row = None
-    for i in range(len(df)):
-        row_text = " ".join([str(x).lower() for x in df.iloc[i].tolist()])
-        if "blairgowrie" in row_text or "rosebud" in row_text or "dromana" in row_text:
-            start_row = i
-            break
+    required_columns = [1, 7, 8, 16]
 
-    if start_row is None:
-        st.error("Could not find the booth rows in the uploaded file.")
+    if df.shape[1] < 17:
+        st.error(
+            f"The uploaded file has only {df.shape[1]} columns. "
+            "Please upload the original VEC Excel file, not a modified/exported version."
+        )
         st.stop()
 
-    data = []
+    base = df.iloc[14:].copy()
+    base = base[required_columns]
+    base.columns = ["booth", "a_votes", "b_votes", "votes"]
 
-    for _, row in df.iloc[start_row:].iterrows():
-        values = row.tolist()
+    base = base.dropna(subset=["booth", "votes"])
 
-        booth = None
-        booth_index = None
+    base["booth"] = base["booth"].astype(str).str.lower().str.strip()
+    base["a_votes"] = pd.to_numeric(base["a_votes"], errors="coerce").fillna(0)
+    base["b_votes"] = pd.to_numeric(base["b_votes"], errors="coerce").fillna(0)
+    base["votes"] = pd.to_numeric(base["votes"], errors="coerce").fillna(0)
 
-        for idx, value in enumerate(values):
-            text = str(value).strip()
-            if text and text.lower() not in ["nan", "none"]:
-                if not re.fullmatch(r"[\d,\.]+", text):
-                    booth = text.lower().strip()
-                    booth_index = idx
-                    break
+    base = base[base["votes"] > 0]
+    base = base[(base["a_votes"] + base["b_votes"]) > 0]
 
-        if booth is None:
-            continue
+    base["a_pct"] = base["a_votes"] / (base["a_votes"] + base["b_votes"]) * 100
+    base["b_pct"] = 100 - base["a_pct"]
 
-        nums = []
-        for value in values:
-            num = pd.to_numeric(value, errors="coerce")
-            if pd.notna(num):
-                nums.append(float(num))
-
-        if len(nums) < 3:
-            continue
-
-        # Your VEC primary spreadsheet format:
-        # independent candidate is before Liberal in the row.
-        # For Nepean 2022, we use:
-        # Independent = 5th numeric value after booth-ish data area
-        # Liberal = 6th numeric value
-        # Total = last numeric value
-        try:
-            a_votes = nums[4]
-            b_votes = nums[5]
-            total_votes = nums[-1]
-        except IndexError:
-            continue
-
-        if total_votes <= 0 or (a_votes + b_votes) <= 0:
-            continue
-
-        data.append({
-            "booth": booth,
-            "a_pct": a_votes / (a_votes + b_votes) * 100,
-            "b_pct": b_votes / (a_votes + b_votes) * 100,
-            "votes": total_votes
-        })
-
-    baseline = pd.DataFrame(data).drop_duplicates(subset=["booth"], keep="first")
-
-    if baseline.empty:
-        st.error("Could not build baseline automatically from the uploaded file.")
-        st.stop()
-
-    return baseline
+    return base[["booth", "a_pct", "b_pct", "votes"]]
 
 def fetch_live_page(url):
     response = requests.get(url, timeout=20)
