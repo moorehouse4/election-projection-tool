@@ -565,6 +565,7 @@ with right:
                 border-radius:18px;
                 padding:1.2rem;
                 min-height:120px;
+                margin:0.5rem;
             ">
                 <div style="color:white;font-size:0.9rem;">{label}</div>
                 <div style="color:{colour};font-size:2rem;font-weight:800;">
