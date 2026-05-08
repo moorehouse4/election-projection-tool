@@ -162,39 +162,80 @@ def load_uploaded_file(file):
 
 
 def auto_detect_baseline(df):
-    """
-    Auto-detects your VEC-style spreadsheet:
-    booth = column 1
-    candidate A / Independent = column 7
-    candidate B / Liberal = column 8
-    total votes = column 16
-    real data starts row 14
-    """
-    start_row = 14
-    booth_col = 1
-    a_col = 7
-    b_col = 8
-    total_col = 16
+    # Clean completely empty rows/columns
+    df = df.dropna(how="all").dropna(axis=1, how="all").reset_index(drop=True)
+    df.columns = range(df.shape[1])
 
-    base = df.iloc[start_row:].copy()
-    base = base[[booth_col, a_col, b_col, total_col]]
-    base.columns = ["booth", "a_votes", "b_votes", "votes"]
+    # Find the first row that looks like booth data
+    start_row = None
+    for i in range(len(df)):
+        row_text = " ".join([str(x).lower() for x in df.iloc[i].tolist()])
+        if "blairgowrie" in row_text or "rosebud" in row_text or "dromana" in row_text:
+            start_row = i
+            break
 
-    base = base.dropna(subset=["booth"])
-    base["booth"] = base["booth"].apply(clean_booth)
+    if start_row is None:
+        st.error("Could not find the booth rows in the uploaded file.")
+        st.stop()
 
-    base["a_votes"] = pd.to_numeric(base["a_votes"], errors="coerce").fillna(0)
-    base["b_votes"] = pd.to_numeric(base["b_votes"], errors="coerce").fillna(0)
-    base["votes"] = pd.to_numeric(base["votes"], errors="coerce").fillna(0)
+    data = []
 
-    base = base[base["votes"] > 0]
-    base = base[(base["a_votes"] + base["b_votes"]) > 0]
+    for _, row in df.iloc[start_row:].iterrows():
+        values = row.tolist()
 
-    base["a_pct"] = base["a_votes"] / (base["a_votes"] + base["b_votes"]) * 100
-    base["b_pct"] = 100 - base["a_pct"]
+        booth = None
+        booth_index = None
 
-    return base[["booth", "a_pct", "b_pct", "votes"]]
+        for idx, value in enumerate(values):
+            text = str(value).strip()
+            if text and text.lower() not in ["nan", "none"]:
+                if not re.fullmatch(r"[\d,\.]+", text):
+                    booth = text.lower().strip()
+                    booth_index = idx
+                    break
 
+        if booth is None:
+            continue
+
+        nums = []
+        for value in values:
+            num = pd.to_numeric(value, errors="coerce")
+            if pd.notna(num):
+                nums.append(float(num))
+
+        if len(nums) < 3:
+            continue
+
+        # Your VEC primary spreadsheet format:
+        # independent candidate is before Liberal in the row.
+        # For Nepean 2022, we use:
+        # Independent = 5th numeric value after booth-ish data area
+        # Liberal = 6th numeric value
+        # Total = last numeric value
+        try:
+            a_votes = nums[4]
+            b_votes = nums[5]
+            total_votes = nums[-1]
+        except IndexError:
+            continue
+
+        if total_votes <= 0 or (a_votes + b_votes) <= 0:
+            continue
+
+        data.append({
+            "booth": booth,
+            "a_pct": a_votes / (a_votes + b_votes) * 100,
+            "b_pct": b_votes / (a_votes + b_votes) * 100,
+            "votes": total_votes
+        })
+
+    baseline = pd.DataFrame(data).drop_duplicates(subset=["booth"], keep="first")
+
+    if baseline.empty:
+        st.error("Could not build baseline automatically from the uploaded file.")
+        st.stop()
+
+    return baseline
 
 def fetch_live_page(url):
     response = requests.get(url, timeout=20)
