@@ -8,13 +8,12 @@ st.set_page_config(page_title="Election Projection Tool", layout="wide")
 
 st.title("Election Projection Tool")
 st.write(
-    "Upload a baseline Excel/CSV file, paste a current results link, "
+    "Upload a baseline Excel/CSV file, paste a current booth-level results link, "
     "choose the columns, and estimate the projected result from booth-level swing."
 )
 
 st.warning(
-    "This tool works best when the current results page contains booth-level results. "
-    "If the live page only shows district-wide candidate totals, booth matching will not work yet."
+    "For VEC pages, use the booth-level 2CP results page, not just the district summary page."
 )
 
 uploaded_file = st.file_uploader(
@@ -23,12 +22,12 @@ uploaded_file = st.file_uploader(
 )
 
 live_url = st.text_input(
-    "Paste current results page link",
+    "Paste current booth-level results page link",
     placeholder="https://www.vec.vic.gov.au/..."
 )
 
-candidate_a_name = st.text_input("Candidate A name", "Candidate A")
-candidate_b_name = st.text_input("Candidate B name", "Candidate B")
+candidate_a_name = st.text_input("Candidate A name", "Independent")
+candidate_b_name = st.text_input("Candidate B name", "Liberal")
 
 st.divider()
 
@@ -91,18 +90,16 @@ def parse_live_results(html, booth_names):
         if not matched_booth:
             continue
 
-        nums = re.findall(r"\b\d{1,3}(?:,\d{3})*\b", line)
+        remainder = lower.replace(matched_booth, "", 1).strip()
+
+        nums = re.findall(r"\b\d{1,3}(?:,\d{3})*\b", remainder)
         nums = [int(n.replace(",", "")) for n in nums]
 
-        if len(nums) < 3:
+        if len(nums) < 5:
             continue
 
-        # Generic assumption:
-        # first number = Candidate B votes
-        # second number = Candidate A votes
-        # last number = total votes
-        #
-        # User can swap A/B if the live page is ordered differently.
+        # VEC 2CP voting-centre format:
+        # Candidate B votes, Candidate A votes, miss-sorts, informal, total votes polled
         b_votes = nums[0]
         a_votes = nums[1]
         total_votes = nums[-1]
@@ -116,6 +113,9 @@ def parse_live_results(html, booth_names):
             "b_pct": b_votes / (a_votes + b_votes) * 100,
             "votes": total_votes
         })
+
+    if not rows:
+        return pd.DataFrame(columns=["booth", "a_pct", "b_pct", "votes"])
 
     return pd.DataFrame(rows).drop_duplicates(subset=["booth"], keep="first")
 
@@ -174,14 +174,19 @@ start_row = st.number_input(
     "First row of real booth data",
     min_value=0,
     max_value=max(len(raw_df) - 1, 0),
-    value=0,
+    value=14,
     step=1
 )
 
-booth_col = st.selectbox("Booth/location column", columns)
-a_col = st.selectbox(f"{candidate_a_name} votes column", columns)
-b_col = st.selectbox(f"{candidate_b_name} votes column", columns)
-total_col = st.selectbox("Total votes column", columns)
+booth_col = st.selectbox("Booth/location column", columns, index=1 if len(columns) > 1 else 0)
+a_col = st.selectbox(f"{candidate_a_name} votes column", columns, index=7 if len(columns) > 7 else 0)
+b_col = st.selectbox(f"{candidate_b_name} votes column", columns, index=8 if len(columns) > 8 else 0)
+total_col = st.selectbox("Total votes column", columns, index=16 if len(columns) > 16 else 0)
+
+st.info(
+    "For Nepean 2022: start row = 14, booth = column 1, "
+    "Independent = column 7, Liberal = column 8, total votes = column 16."
+)
 
 if st.button("Run projection"):
     if not live_url:
@@ -218,7 +223,7 @@ if st.button("Run projection"):
     if live.empty:
         st.warning(
             "No booth-level live results were parsed. "
-            "The live page may not contain booth-level results yet, or the layout may need custom tuning."
+            "Use the booth-level 2CP results page, not the district summary page."
         )
         st.stop()
 
@@ -247,6 +252,7 @@ if st.button("Run projection"):
         st.error(f"Current projection: {candidate_b_name} ahead")
 
     st.subheader("5. Booth-by-booth swing")
+
     merged_display = merged[[
         "booth",
         "a_pct_base",
