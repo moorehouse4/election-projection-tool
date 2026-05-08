@@ -519,17 +519,17 @@ with left:
     """, unsafe_allow_html=True)
 
 with right:
-if uploaded_file is None:
-    st.info("Upload a baseline results file to begin.")
-    st.stop()
+    if uploaded_file is None:
+        st.info("Upload a baseline results file to begin.")
+        st.stop()
 
-if not live_url:
-    st.info("Paste a booth-level live results link to begin.")
-    st.stop()
+    if not live_url:
+        st.info("Paste a booth-level live results link to begin.")
+        st.stop()
 
-if not run_button:
-    st.info("Click Run projection when ready.")
-    st.stop()
+    if not run_button:
+        st.info("Click Run projection when ready.")
+        st.stop()
     
     candidate_a_display = candidate_a_name or "Candidate A"
     candidate_b_display = candidate_b_name or "Candidate B"
