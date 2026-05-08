@@ -95,26 +95,37 @@ input::placeholder {
     color: white !important;
 }
 
+/* Upload button */
 [data-testid="stFileUploaderDropzone"] button {
     background: white !important;
     color: #00486e !important;
-    border: 1px solid white !important;
+    border: none !important;
     border-radius: 8px !important;
-    padding: 0.4rem 0.8rem !important;
-    width: auto !important;
-    min-width: auto !important;
+    padding: 0.45rem 1rem !important;
+    font-size: 0 !important;
+    position: relative;
 }
 
-[data-testid="stFileUploaderDropzone"] button * {
-    color: #00486e !important;
+/* Hide duplicated internal text */
+[data-testid="stFileUploaderDropzone"] button div,
+[data-testid="stFileUploaderDropzone"] button span {
+    display: none !important;
 }
 
+/* Custom single label */
+[data-testid="stFileUploaderDropzone"] button::after {
+    content: "Upload";
+    font-size: 16px;
+    color: #00486e;
+    font-weight: 800;
+}
+
+/* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
     background: #003554 !important;
-    color: white !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button:hover * {
+[data-testid="stFileUploaderDropzone"] button:hover::after {
     color: white !important;
 }
 
