@@ -619,59 +619,5 @@ with right:
     else:
         st.error(f"Current projection: {candidate_b_display} ahead")
 
-    st.subheader("Booth-by-booth swing")
-
-    merged_display = merged[[
-        "booth",
-        "vote_type",
-        "a_pct_base",
-        "a_pct_live",
-        "swing_to_a",
-        "b_pct_base",
-        "b_pct_live",
-        "swing_to_b",
-        "votes_live"
-    ]].copy()
-
-    merged_display.columns = [
-        "Booth",
-        "Vote type",
-        f"{candidate_a_display} baseline %",
-        f"{candidate_a_display} live %",
-        f"Swing to {candidate_a_display}",
-        f"{candidate_b_display} baseline %",
-        f"{candidate_b_display} live %",
-        f"Swing to {candidate_b_display}",
-        "Live votes"
-    ]
-
-    styled_table = (
-        merged_display
-        .sort_values("Live votes", ascending=False)
-        .style
-        .set_properties(**{
-            "background-color": "#00486e",
-            "color": "white",
-            "border-color": "white",
-        })
-        .set_table_styles([
-            {
-                "selector": "th",
-                "props": [
-                    ("background-color", "#00486e"),
-                    ("color", "white"),
-                    ("border-color", "white"),
-                ],
-            },
-            {
-                "selector": "td",
-                "props": [
-                    ("background-color", "#00486e"),
-                    ("color", "white"),
-                    ("border-color", "white"),
-                ],
-            },
-        ])
-    )
 
     st.dataframe(styled_table, use_container_width=True)
