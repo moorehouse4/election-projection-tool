@@ -156,7 +156,6 @@ st.markdown("""
         This tool is for Community Independent Candidates running in state and federal campaigns in Australia. Upload a baseline election results file, paste a live booth-level results link,
         enter the candidate names, and click <b>Run projection</b> to estimate the live result
         using booth-by-booth swing modelling.
-
         For any and all enquiries please email: henryymooree@gmail.com
     </p>
 </div>
