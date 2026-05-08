@@ -10,9 +10,6 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown("""
-<style>
-#MainMenu, footer, header {visibility: hidden;}
 
 st.markdown("""
 <div class="hero">
