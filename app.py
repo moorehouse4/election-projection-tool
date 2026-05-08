@@ -4,12 +4,6 @@ import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
 
-st.set_page_config(
-    page_title="Election Projection Tool",
-    page_icon="🗳️",
-    layout="wide"
-)
-
 st.markdown("""
 <style>
 .main {
@@ -43,9 +37,7 @@ h1, h2, h3 {
 }
 </style>
 """, unsafe_allow_html=True)
-}
-</style>
-""", unsafe_allow_html=True)
+
 
 st.title("Election Projection Tool")
 st.write(
