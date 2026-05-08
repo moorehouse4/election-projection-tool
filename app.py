@@ -84,7 +84,6 @@ input::placeholder {
     margin-bottom: 1rem;
 }
 
-/* Dropzone */
 [data-testid="stFileUploaderDropzone"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -92,42 +91,56 @@ input::placeholder {
     padding: 1rem !important;
 }
 
-/* Keep labels readable */
 [data-testid="stFileUploader"] label,
 [data-testid="stFileUploader"] small,
 [data-testid="stFileUploader"] p {
     color: white !important;
 }
 
-/* File name row after upload */
+/* Hide Streamlit's messy upload button text */
+[data-testid="stFileUploaderDropzone"] > button {
+    background: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.45rem 0.9rem !important;
+    width: auto !important;
+    min-width: auto !important;
+    font-size: 0 !important;
+}
+
+/* Hide all internal duplicated upload text */
+[data-testid="stFileUploaderDropzone"] > button * {
+    display: none !important;
+}
+
+/* Add one clean upload label */
+[data-testid="stFileUploaderDropzone"] > button::after {
+    content: "Upload";
+    color: #00486e !important;
+    font-size: 0.9rem !important;
+}
+
+/* Hover */
+[data-testid="stFileUploaderDropzone"] > button:hover {
+    background: #003554 !important;
+}
+
+[data-testid="stFileUploaderDropzone"] > button:hover::after {
+    color: white !important;
+}
+
+/* Uploaded file row */
 [data-testid="stFileUploaderFile"] {
     background: white !important;
     border-radius: 10px !important;
     border: 1px solid white !important;
 }
 
-/* File name text */
 [data-testid="stFileUploaderFile"] * {
     color: #00486e !important;
     fill: #00486e !important;
     font-size: 0.85rem !important;
 }
-
-/* Upload/Add button - simple readable default */
-[data-testid="stFileUploaderDropzone"] button {
-    all: unset !important;
-    background: white !important;
-    color: #00486e !important;
-    border-radius: 8px !important;
-    padding: 0.45rem 0.9rem !important;
-    cursor: pointer !important;
-}
-
-[data-testid="stFileUploaderDropzone"] button * {
-    color: #00486e !important;
-    font-size: 0.9rem !important;
-}
-
 /* Run button */
 .stButton > button {
     background: #00486e !important;
