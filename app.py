@@ -77,22 +77,54 @@ input::placeholder {
     color: rgba(255,255,255,0.75) !important;
 }
 
+/* File uploader container */
+[data-testid="stFileUploader"] {
+    background: #00486e !important;
+    border-radius: 18px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* File uploader drop area */
 [data-testid="stFileUploaderDropzone"] {
     background: #00486e !important;
     border: 1px solid white !important;
-    border-radius: 12px;
+    border-radius: 12px !important;
+    padding: 1rem !important;
 }
 
+/* File uploader text */
 [data-testid="stFileUploaderDropzone"] * {
     color: white !important;
 }
 
+/* Browse/upload button */
 [data-testid="stFileUploaderDropzone"] button {
-    background: #00486e !important;
-    color: white !important;
+    background: white !important;
+    color: #00486e !important;
     border: 1px solid white !important;
+    border-radius: 8px !important;
+    padding: 0.4rem 0.8rem !important;
+    width: auto !important;
+    min-width: auto !important;
 }
 
+/* Browse/upload button text */
+[data-testid="stFileUploaderDropzone"] button * {
+    color: #00486e !important;
+}
+
+/* Button hover */
+[data-testid="stFileUploaderDropzone"] button:hover {
+    background: #003554 !important;
+    color: white !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button:hover * {
+    color: white !important;
+}
+
+/* Uploaded file display */
 [data-testid="stFileUploaderFile"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -100,16 +132,6 @@ input::placeholder {
 }
 
 [data-testid="stFileUploaderFile"] * {
-    color: white !important;
-    fill: white !important;
-}
-
-[data-testid="stFileUploaderDeleteBtn"] {
-    background: #00486e !important;
-    color: white !important;
-}
-
-[data-testid="stFileUploaderDeleteBtn"] * {
     color: white !important;
     fill: white !important;
 }
@@ -200,7 +222,7 @@ st.markdown("""
 <div class="hero">
     <h1>Election Projection Tool</h1>
     <p>
-        This tool is made for Community Indpendent Candidates running an election campaign is state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.   
+        This tool is made for Community Indpendent Candidates running an election campaign in state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.   
         </p>
         Upload a baseline results file, paste a live booth-level results link,
         and estimate the projected result using booth-by-booth swing.
@@ -382,8 +404,8 @@ with left:
         placeholder="Paste booth-level results link here"
     )
 
-    candidate_a_name = st.text_input("Candidate A name", "Independent")
-    candidate_b_name = st.text_input("Candidate B name", "Liberal")
+  candidate_a_name = st.text_input("Candidate A name", placeholder="Enter candidate A name")
+candidate_b_name = st.text_input("Candidate B name", placeholder="Enter candidate B name")
 
     run_button = st.button("Run projection")
 
