@@ -12,7 +12,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-#MainMenu, footer, header {visibility: show;}
+#MainMenu, footer, header {visibility: hidden;}
 
 * {
     font-family: "Zalando Sans Expanded Extra Bold", "Zalando Sans Expanded", Arial, sans-serif !important;
@@ -56,8 +56,7 @@ h1, h2, h3, p, label, span {
     color: white !important;
 }
 
-[data-testid="stTextInput"],
-[data-testid="stFileUploader"] {
+[data-testid="stTextInput"] {
     background: #00486e !important;
     border-radius: 18px;
     padding: 1rem;
@@ -77,7 +76,7 @@ input::placeholder {
     color: rgba(255,255,255,0.75) !important;
 }
 
-/* File uploader container */
+/* File uploader */
 [data-testid="stFileUploader"] {
     background: #00486e !important;
     border-radius: 18px;
@@ -85,7 +84,6 @@ input::placeholder {
     margin-bottom: 1rem;
 }
 
-/* File uploader drop area */
 [data-testid="stFileUploaderDropzone"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -93,12 +91,10 @@ input::placeholder {
     padding: 1rem !important;
 }
 
-/* File uploader text */
 [data-testid="stFileUploaderDropzone"] * {
     color: white !important;
 }
 
-/* Browse/upload button */
 [data-testid="stFileUploaderDropzone"] button {
     background: white !important;
     color: #00486e !important;
@@ -109,12 +105,10 @@ input::placeholder {
     min-width: auto !important;
 }
 
-/* Browse/upload button text */
 [data-testid="stFileUploaderDropzone"] button * {
     color: #00486e !important;
 }
 
-/* Button hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
     background: #003554 !important;
     color: white !important;
@@ -124,7 +118,6 @@ input::placeholder {
     color: white !important;
 }
 
-/* Uploaded file display */
 [data-testid="stFileUploaderFile"] {
     background: #00486e !important;
     border: 1px solid white !important;
@@ -136,18 +129,17 @@ input::placeholder {
     fill: white !important;
 }
 
+/* Run button */
 .stButton > button {
     background: #00486e !important;
     color: white !important;
     border: 1px solid white !important;
     border-radius: 999px;
     padding: 0.8rem 1.6rem;
-    font-weight: 800;
     width: 100%;
 }
 
-.stButton > button:hover,
-[data-testid="stFileUploaderDropzone"] button:hover {
+.stButton > button:hover {
     background: #003554 !important;
     color: white !important;
     border: 1px solid white !important;
@@ -222,11 +214,9 @@ st.markdown("""
 <div class="hero">
     <h1>Election Projection Tool</h1>
     <p>
-        This tool is made for Community Indpendent Candidates running an election campaign in state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.   
-        </p>
+        This tool is made for Community Indpendent Candidates running an election campaign is state and federal elections in Australia. This tool helps predict 2 candidate preferred results by comparing the previous election results. The tool only looks at data and makes a reasonable prediction and should not be taken as an offical results. This site is not authorised by the VEC/AEC and was made by an independent private individual.
         Upload a baseline results file, paste a live booth-level results link,
         and estimate the projected result using booth-by-booth swing.
-        </p>
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -404,8 +394,15 @@ with left:
         placeholder="Paste booth-level results link here"
     )
 
-  candidate_a_name = st.text_input("Candidate A name", placeholder="Enter candidate A name")
-candidate_b_name = st.text_input("Candidate B name", placeholder="Enter candidate B name")
+    candidate_a_name = st.text_input(
+        "Candidate A name",
+        placeholder="Enter candidate A name"
+    )
+
+    candidate_b_name = st.text_input(
+        "Candidate B name",
+        placeholder="Enter candidate B name"
+    )
 
     run_button = st.button("Run projection")
 
@@ -432,6 +429,9 @@ with right:
         st.info("Click Run projection when ready.")
         st.stop()
 
+    candidate_a_display = candidate_a_name or "Candidate A"
+    candidate_b_display = candidate_b_name or "Candidate B"
+
     baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
 
     try:
@@ -455,8 +455,8 @@ with right:
     st.markdown('<div class="panel"><h2>Projection</h2></div>', unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
-    c1.metric(f"Projected {candidate_a_name}", f"{result['projected_a']:.2f}%")
-    c2.metric(f"Projected {candidate_b_name}", f"{result['projected_b']:.2f}%")
+    c1.metric(f"Projected {candidate_a_display}", f"{result['projected_a']:.2f}%")
+    c2.metric(f"Projected {candidate_b_display}", f"{result['projected_b']:.2f}%")
 
     c3, c4, c5 = st.columns(3)
     c3.metric("Matched booths", len(merged))
@@ -471,7 +471,7 @@ with right:
             border-radius:18px;
             padding:1.2rem;
         ">
-            <div style="color:white;font-size:0.9rem;">Swing to {candidate_a_name}</div>
+            <div style="color:white;font-size:0.9rem;">Swing to {candidate_a_display}</div>
             <div style="color:{swing_colour};font-size:2rem;font-weight:800;">
                 {result['weighted_swing']:.2f}%
             </div>
@@ -481,9 +481,9 @@ with right:
     )
 
     if result["projected_a"] > result["projected_b"]:
-        st.success(f"Current projection: {candidate_a_name} ahead")
+        st.success(f"Current projection: {candidate_a_display} ahead")
     else:
-        st.error(f"Current projection: {candidate_b_name} ahead")
+        st.error(f"Current projection: {candidate_b_display} ahead")
 
     st.subheader("Booth-by-booth swing")
 
@@ -500,12 +500,12 @@ with right:
 
     merged_display.columns = [
         "Booth",
-        f"{candidate_a_name} baseline %",
-        f"{candidate_a_name} live %",
-        f"Swing to {candidate_a_name}",
-        f"{candidate_b_name} baseline %",
-        f"{candidate_b_name} live %",
-        f"Swing to {candidate_b_name}",
+        f"{candidate_a_display} baseline %",
+        f"{candidate_a_display} live %",
+        f"Swing to {candidate_a_display}",
+        f"{candidate_b_display} baseline %",
+        f"{candidate_b_display} live %",
+        f"Swing to {candidate_b_display}",
         "Live votes"
     ]
 
