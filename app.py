@@ -10,31 +10,13 @@ st.set_page_config(
     layout="wide"
 )
 
-
 st.markdown("""
 <style>
-.block-container {
-    max-width: 1400px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-</style>
-""", unsafe_allow_html=True)
+#MainMenu, footer, header {visibility: hidden;}
 
 .stApp {
     background: #3bc6e4;
 }
-
-st.markdown("""
-<div class="hero">
-    <h1>Upload Election Results & Generate Live Projections</h1>
-    <p>
-        Upload a baseline election results file, paste a live booth-level results link,
-        enter the candidate names, and click <b>Run projection</b> to estimate the live result
-        using booth-by-booth swing modelling.
-    </p>
-</div>
-""", unsafe_allow_html=True)
 
 .block-container {
     max-width: 1400px;
@@ -169,10 +151,13 @@ input::placeholder {
 
 st.markdown("""
 <div class="hero">
-    <h1>Election Projection Tool</h1>
+    <h1>Upload Election Results & Generate Live Projections</h1>
     <p>
-        Upload a baseline results file, paste a live booth-level results link,
-        and estimate the projected result using booth-by-booth swing.
+        This tool is for Community Independent Candidates running in state and federal campaigns in Australia. Upload a baseline election results file, paste a live booth-level results link,
+        enter the candidate names, and click <b>Run projection</b> to estimate the live result
+        using booth-by-booth swing modelling.
+
+        For any and all enquiries please email: henryymooree@gmail.com
     </p>
 </div>
 """, unsafe_allow_html=True)
