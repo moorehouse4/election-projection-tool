@@ -143,6 +143,21 @@ input::placeholder {
     display: none !important;
 }
 
+/* Hide extra upload button once a file is uploaded */
+[data-testid="stFileUploaderDropzone"]:has([data-testid="stFileUploaderFile"]) > button {
+    display: none !important;
+}
+
+/* Fallback: hide any button after uploaded file row */
+[data-testid="stFileUploaderFile"] ~ button {
+    display: none !important;
+}
+
+/* Run button */
+.stButton > button {
+    background: #00486e !important;
+    color: white !important;
+    
 /* Run button */
 .stButton > button {
     background: #00486e !important;
