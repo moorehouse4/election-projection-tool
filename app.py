@@ -27,7 +27,7 @@ header {visibility: hidden;}
 }
 
 .hero {
-    background: white;
+    background: #3bc6e4;
     padding: 3rem;
     border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.18);
