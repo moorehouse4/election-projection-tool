@@ -13,6 +13,32 @@ st.set_page_config(
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
+/* FINAL FIX: kill Streamlit's messy upload button */
+[data-testid="stFileUploaderDropzone"] button {
+    display: none !important;
+}
+
+/* Make the dropzone itself act as the upload area */
+[data-testid="stFileUploaderDropzone"] {
+    cursor: pointer !important;
+}
+
+/* Add one clean instruction instead */
+[data-testid="stFileUploaderDropzone"]::before {
+    content: "Click here to upload baseline file";
+    display: block;
+    background: white;
+    color: #00486e;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    width: fit-content;
+    margin-bottom: 1rem;
+}
+
+/* Hide any leftover duplicated upload text */
+[data-testid="stFileUploaderDropzone"] [data-testid="stFileUploaderDropzoneInstructions"] {
+    display: none !important;
+}
 
 * {
     font-family: "Zalando Sans Expanded Extra Bold", "Zalando Sans Expanded", Arial, sans-serif !important;
