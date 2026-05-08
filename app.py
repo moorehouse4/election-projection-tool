@@ -43,6 +43,9 @@ h1, h2, h3 {
 }
 </style>
 """, unsafe_allow_html=True)
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("Election Projection Tool")
 st.write(
