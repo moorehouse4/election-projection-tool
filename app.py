@@ -585,6 +585,7 @@ candidate_b_colour = "#21c45d" if result["projected_b"] >= 50 else "#ff4b4b"
 swing_colour = "#ff4b4b" if result["weighted_swing"] < 0 else "#21c45d"
 
 c1, c2 = st.columns(2)
+
 with c1:
     result_card(
         f"Projected {candidate_a_display}",
@@ -600,11 +601,16 @@ with c2:
     )
 
 c3, c4, c5 = st.columns(3)
+
 with c3:
     result_card("Matched booths", len(merged), "white")
 
 with c4:
-    result_card("Counted vs baseline", f"{result['counted'] * 100:.1f}%", "white")
+    result_card(
+        "Counted vs baseline",
+        f"{result['counted'] * 100:.1f}%",
+        "white"
+    )
 
 with c5:
     result_card(
