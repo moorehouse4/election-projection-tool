@@ -530,7 +530,7 @@ with right:
     if not run_button:
         st.info("Click Run projection when ready.")
         st.stop()
-    
+
     candidate_a_display = candidate_a_name or "Candidate A"
     candidate_b_display = candidate_b_name or "Candidate B"
 
@@ -555,6 +555,9 @@ with right:
         st.stop()
 
     st.markdown('<div class="panel"><h2>Projection</h2></div>', unsafe_allow_html=True)
+
+    # ALL projection boxes go here
+    # ALL booth-by-booth swing table goes here
 
     
     def result_card(label, value, colour="white"):
