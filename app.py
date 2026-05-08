@@ -14,6 +14,17 @@ st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
 
+st.markdown("""
+<div class="hero">
+    <h1>Upload Election Results & Generate Live Projections</h1>
+    <p>
+        Upload a baseline election results file, paste a live booth-level results link,
+        enter the candidate names, and click <b>Run projection</b> to estimate the live result
+        using booth-by-booth swing modelling.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 .stApp {
     background: #3bc6e4;
 }
@@ -101,9 +112,9 @@ input::placeholder {
 
 .stButton > button:hover,
 [data-testid="stFileUploaderDropzone"] button:hover {
-    background: white !important;
-    color: #00486e !important;
-    border: 1px solid #00486e !important;
+    background: #003554 !important;
+    color: white !important;
+    border: 1px solid white !important;
 }
 
 [data-testid="stAlert"] {
