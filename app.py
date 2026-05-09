@@ -13,32 +13,6 @@ st.set_page_config(
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
-/* FINAL FIX: kill Streamlit's messy upload button */
-[data-testid="stFileUploaderDropzone"] button {
-    display: none !important;
-}
-
-/* Make the dropzone itself act as the upload area */
-[data-testid="stFileUploaderDropzone"] {
-    cursor: pointer !important;
-}
-
-/* Add one clean instruction instead */
-[data-testid="stFileUploaderDropzone"]::before {
-    content: "Click here to upload baseline file";
-    display: block;
-    background: white;
-    color: #00486e;
-    padding: 0.7rem 1rem;
-    border-radius: 10px;
-    width: fit-content;
-    margin-bottom: 1rem;
-}
-
-/* Hide any leftover duplicated upload text */
-[data-testid="stFileUploaderDropzone"] [data-testid="stFileUploaderDropzoneInstructions"] {
-    display: none !important;
-}
 
 * {
     font-family: "Zalando Sans Expanded Extra Bold", "Zalando Sans Expanded", Arial, sans-serif !important;
@@ -117,16 +91,12 @@ input::placeholder {
     padding: 1rem !important;
 }
 
-/* Keep uploader label text white */
 [data-testid="stFileUploader"] label,
 [data-testid="stFileUploader"] small,
 [data-testid="stFileUploader"] p {
     color: white !important;
 }
 
-/* DO NOT style the internal upload button */
-
-/* Uploaded file row */
 [data-testid="stFileUploaderFile"] {
     background: white !important;
     border-radius: 10px !important;
@@ -155,7 +125,6 @@ input::placeholder {
     border: 1px solid white !important;
 }
 
-/* Alerts */
 [data-testid="stAlert"] {
     background: #00486e !important;
     border-radius: 16px;
@@ -164,55 +133,6 @@ input::placeholder {
 
 [data-testid="stAlert"] * {
     color: white !important;
-}
-
-/* Metrics */
-[data-testid="stMetric"] {
-    background: #00486e;
-    border-radius: 18px;
-    padding: 1.2rem;
-    border: 1px solid white;
-}
-
-[data-testid="stMetric"] * {
-    color: white !important;
-}
-
-/* Dataframe/table */
-[data-testid="stDataFrame"] {
-    background: #00486e !important;
-    border-radius: 12px;
-    border: 1px solid white;
-    overflow: hidden;
-}
-
-[data-testid="stDataFrame"] * {
-    color: white !important;
-}
-
-/* Dataframe hover toolbar */
-[data-testid="stElementToolbar"] {
-    background: #00486e !important;
-    border: 1px solid white !important;
-    border-radius: 10px !important;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
-}
-
-[data-testid="stElementToolbar"] button {
-    background: #00486e !important;
-    border: 1px solid white !important;
-    border-radius: 6px !important;
-}
-
-[data-testid="stElementToolbar"] svg,
-[data-testid="stElementToolbar"] path {
-    color: white !important;
-    fill: white !important;
-    stroke: white !important;
-}
-
-[data-testid="stElementToolbar"] button:hover {
-    background: #003554 !important;
 }
 
 .small-note {
@@ -230,7 +150,7 @@ st.markdown("""
     </p>
     <div style="height: 2rem;"></div>
     <p>
-        <strong>Instructions:</strong> Upload a baseline results file, paste a live booth-level results link, and estimate the projected result using booth-by-booth swing.
+        <strong>Instructions:</strong> Upload a baseline results file or paste a previous election booth-level 2CP results link, paste a live booth-level results link, and estimate the projected result using booth-by-booth swing.
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -325,6 +245,89 @@ def fetch_live_page(url):
     response = requests.get(url, timeout=20)
     response.raise_for_status()
     return response.text
+
+
+def load_baseline_from_url(url):
+    html = fetch_live_page(url)
+
+    try:
+        tables = pd.read_html(html)
+    except Exception:
+        st.error("Could not read tables from the baseline results link.")
+        st.stop()
+
+    if not tables:
+        st.error("No tables found on the baseline results page.")
+        st.stop()
+
+    df = max(tables, key=len)
+    df.columns = [str(c).lower().strip() for c in df.columns]
+
+    booth_col = next(
+        (c for c in df.columns if "booth" in c or "polling" in c or "place" in c or "venue" in c),
+        None
+    )
+
+    if booth_col is None:
+        booth_col = df.columns[0]
+
+    possible_vote_cols = []
+
+    for col in df.columns:
+        if col == booth_col:
+            continue
+
+        numeric = pd.to_numeric(
+            df[col].astype(str).str.replace(",", "").str.replace("%", ""),
+            errors="coerce"
+        )
+
+        if numeric.notna().sum() > 0:
+            possible_vote_cols.append(col)
+
+    if len(possible_vote_cols) < 2:
+        st.error("Could not detect two candidate vote columns from the baseline link.")
+        st.stop()
+
+    # Choose first two numeric columns as candidate A and B vote columns.
+    # This works for many AEC/VEC 2CP booth tables.
+    a_col = possible_vote_cols[0]
+    b_col = possible_vote_cols[1]
+
+    total_col = next((c for c in df.columns if "total" in c), None)
+
+    base = pd.DataFrame()
+    base["booth"] = df[booth_col].astype(str).str.lower().str.strip()
+    base["a_votes"] = pd.to_numeric(
+        df[a_col].astype(str).str.replace(",", "").str.replace("%", ""),
+        errors="coerce"
+    ).fillna(0)
+    base["b_votes"] = pd.to_numeric(
+        df[b_col].astype(str).str.replace(",", "").str.replace("%", ""),
+        errors="coerce"
+    ).fillna(0)
+
+    if total_col:
+        base["votes"] = pd.to_numeric(
+            df[total_col].astype(str).str.replace(",", "").str.replace("%", ""),
+            errors="coerce"
+        ).fillna(base["a_votes"] + base["b_votes"])
+    else:
+        base["votes"] = base["a_votes"] + base["b_votes"]
+
+    base = base.dropna(subset=["booth"])
+    base = base[base["votes"] > 0]
+    base = base[(base["a_votes"] + base["b_votes"]) > 0]
+
+    base["a_pct"] = base["a_votes"] / (base["a_votes"] + base["b_votes"]) * 100
+    base["b_pct"] = 100 - base["a_pct"]
+    base["vote_type"] = base["booth"].apply(classify_vote_type)
+
+    if base.empty:
+        st.error("Could not build baseline from the results link.")
+        st.stop()
+
+    return base[["booth", "vote_type", "a_pct", "b_pct", "votes"]]
 
 
 def parse_live_results(html):
@@ -484,7 +487,7 @@ left, right = st.columns([1, 2.2], gap="large")
 
 with left:
     st.markdown(
-        '<div class="panel"><h2>Inputs</h2><p class="small-note">Upload the baseline file and paste the live booth-level results link.</p></div>',
+        '<div class="panel"><h2>Inputs</h2><p class="small-note">Upload the baseline file or paste a previous election results link. Then paste the live booth-level results link.</p></div>',
         unsafe_allow_html=True
     )
 
@@ -493,9 +496,14 @@ with left:
         type=["xls", "xlsx", "csv"]
     )
 
+    baseline_url = st.text_input(
+        "Or paste previous election booth-level 2CP results link",
+        placeholder="Paste previous election booth-level 2CP link here"
+    )
+
     live_url = st.text_input(
         "Paste current booth-level results page link",
-        placeholder="Paste booth-level results link here"
+        placeholder="Paste live booth-level results link here"
     )
 
     candidate_a_name = st.text_input(
@@ -512,21 +520,20 @@ with left:
 
     st.markdown("""
     <div class="panel">
-        <h3>Accepted file formats</h3>
+        <h3>Accepted baseline formats</h3>
         <p class="small-note">
-            Original VEC Excel file, cleaned 6-column file, or simple 4-column file:
-            booth, candidate A votes, candidate B votes, total votes.
+            Upload a VEC Excel file, a cleaned CSV/Excel file, or paste an AEC/VEC booth-level 2CP results link.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
 with right:
-    if uploaded_file is None:
-        st.info("Upload a baseline results file to begin.")
+    if uploaded_file is None and not baseline_url:
+        st.info("Upload a baseline file or paste a previous election booth-level 2CP results link.")
         st.stop()
 
     if not live_url:
-        st.info("Paste a booth-level live results link to begin.")
+        st.info("Paste a live booth-level results link to begin.")
         st.stop()
 
     if not run_button:
@@ -536,7 +543,10 @@ with right:
     candidate_a_display = candidate_a_name or "Candidate A"
     candidate_b_display = candidate_b_name or "Candidate B"
 
-    baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
+    if uploaded_file is not None:
+        baseline = auto_detect_baseline(load_uploaded_file(uploaded_file))
+    else:
+        baseline = load_baseline_from_url(baseline_url)
 
     try:
         html = fetch_live_page(live_url)
@@ -567,7 +577,7 @@ with right:
                 border-radius:18px;
                 padding:1.2rem;
                 min-height:120px;
-                margin:1.5rem;
+                margin:1.3rem;
             ">
                 <div style="color:white;font-size:0.9rem;">{label}</div>
                 <div style="color:{colour};font-size:2rem;font-weight:800;">
